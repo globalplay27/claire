@@ -12,7 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:migrate": "tsx src/database/migrate.ts"
+    "db:migrate": "node dist/database/migrate.js"
   },
   "dependencies": {
     "dotenv": "^16.6.1",
