@@ -1,11 +1,19 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { db } from "./db.js";
 
 async function main() {
-  const sql = await readFile(resolve("migrations/001_init.sql"), "utf8");
-  await db.query(sql);
-  console.log("Migration applied successfully.");
+  const directory = resolve("migrations");
+  const files = (await readdir(directory))
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+
+  for (const file of files) {
+    const sql = await readFile(resolve(directory, file), "utf8");
+    await db.query(sql);
+    console.log(`Migration applied: ${file}`);
+  }
+
   await db.end();
 }
 
