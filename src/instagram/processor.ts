@@ -1,4 +1,4 @@
-import { FIRST_PRIVATE_REPLY } from "../claire/persona.js";
+import { firstPrivateReply } from "../claire/persona.js";
 import { generateClaireReply } from "../claire/agent.js";
 import { notifyHumanHandoff } from "../handoff/human.js";
 import { detectLeadKeyword } from "../leads/keywords.js";
@@ -30,7 +30,7 @@ export async function processInstagramEvent(event: InstagramEvent) {
       stage: "private_reply_sent"
     });
 
-    const reply = FIRST_PRIVATE_REPLY.replace("QUERO", keyword.toUpperCase());
+    const reply = firstPrivateReply(keyword);
     const result = await sendPrivateReply(event.commentId, reply);
     await saveMessage({
       leadId: lead.id,
@@ -47,6 +47,7 @@ export async function processInstagramEvent(event: InstagramEvent) {
     stage: "dm_started"
   });
 
+  const history = await recentConversation(lead.id);
   await saveMessage({
     leadId: lead.id,
     direction: "inbound",
@@ -57,7 +58,6 @@ export async function processInstagramEvent(event: InstagramEvent) {
   const classification = classifyLead(event.text);
   const temperature = hottest(lead.temperature, classification.temperature);
   const needsHuman = lead.needs_human || classification.needsHuman;
-  const history = await recentConversation(lead.id);
   const reply = await generateClaireReply(history, event.text, needsHuman);
 
   const sent = await sendDirectMessage(event.senderId, reply);
