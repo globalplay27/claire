@@ -19,6 +19,30 @@ async function metaPost(body: unknown) {
   return json as { message_id?: string; recipient_id?: string } | null;
 }
 
+function contactButtonsMessage(text: string, siteUrl: string, whatsappUrl: string) {
+  return {
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "button",
+        text,
+        buttons: [
+          {
+            type: "web_url",
+            url: whatsappUrl,
+            title: "Falar no WhatsApp"
+          },
+          {
+            type: "web_url",
+            url: siteUrl,
+            title: "Acessar site"
+          }
+        ]
+      }
+    }
+  };
+}
+
 function websiteButtonMessage(text: string, url: string) {
   return {
     attachment: {
@@ -63,5 +87,30 @@ export async function sendDirectMessageWithWebsite(instagramScopedUserId: string
   return metaPost({
     recipient: { id: instagramScopedUserId },
     message: websiteButtonMessage(text, url)
+  });
+}
+
+
+export async function sendPrivateReplyWithContacts(
+  commentId: string,
+  text: string,
+  siteUrl: string,
+  whatsappUrl: string
+) {
+  return metaPost({
+    recipient: { comment_id: commentId },
+    message: contactButtonsMessage(text, siteUrl, whatsappUrl)
+  });
+}
+
+export async function sendDirectMessageWithContacts(
+  instagramScopedUserId: string,
+  text: string,
+  siteUrl: string,
+  whatsappUrl: string
+) {
+  return metaPost({
+    recipient: { id: instagramScopedUserId },
+    message: contactButtonsMessage(text, siteUrl, whatsappUrl)
   });
 }
