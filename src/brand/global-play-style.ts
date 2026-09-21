@@ -4,69 +4,80 @@ INSTAGRAM: @globalplay_streaming
 SITE: https://globalplay.fun
 WHATSAPP: (21) 96481-6185
 
-IDENTIDADE VISUAL OBRIGATÓRIA
-- Estética brasileira de anúncio premium, forte e comercial.
-- Visual cinematográfico, realista, moderno e impactante.
-- Cores principais: azul elétrico, vermelho, prata/cromado, preto e branco.
-- Usar contraste alto, luz cinematográfica, brilho/neon controlado, profundidade e acabamento 3D.
-- Títulos grandes, fortes, em alto-relevo/3D, muito legíveis no celular.
-- Preferir composição com pessoas reais ou ambiente de entretenimento em casa, TV grande, telas e conteúdo visual.
-- Mostrar benefício visual antes de explicar.
-- Layout organizado em blocos claros; impactante sem ficar poluído.
-- NÃO fazer arte minimalista genérica com muito espaço vazio.
-- NÃO usar cards brancos genéricos, ícones finos ou visual de template corporativo.
-- NÃO usar inglês visível na arte.
-- NÃO usar frases em inglês como "Stream your favorites", "Personal use", "Reseller opportunity".
-- Todo texto visível deve estar em PORTUGUÊS BRASILEIRO.
-- Não inventar logos de terceiros, marcas de canais, filmes reais ou personagens protegidos.
-- Não deformar nem reinventar a identidade Global Play. Quando não houver logo oficial aplicado, reservar uma área limpa para a marca e usar apenas o nome GLOBAL PLAY de forma legível.
+OBJETIVO
+- Criar conteúdo que faça o público se identificar com uma dor real, entender a solução em segundos e visitar o site.
+- Crescer visualizações, seguidores e clientes sem prometer viralização nem inventar resultados.
 
-MODELO VISUAL APROVADO — CLIENTE FINAL
-- Referência estética: anúncio premium com logo forte no topo, headline grande, sala de TV/família, TV com três categorias visuais, preços em caixas neon e CTA destacado.
-- Headline preferida: "SUA DIVERSÃO EM UM SÓ LUGAR".
-- Linha de apoio: "TV AO VIVO • FILMES • SÉRIES".
-- Pode mostrar três áreas na TV: TV AO VIVO, FILMES, SÉRIES.
-- Preços oficiais para este criativo:
+DORES CENTRAIS — TODO CRIATIVO DE CONVERSÃO DEVE PARTIR DE UMA DELAS
+1. Aplicativo/streaming travando justamente em dia de jogo ou na hora do gol.
+2. Delay alto e receber spoiler do gol antes da imagem chegar.
+3. Suporte que não responde quando o cliente precisa.
+4. Filme ou série travando na melhor parte.
+5. Pouco conteúdo e sensação de pagar por algo que não entrega variedade.
+6. Para revendedores: fornecedor instável, suporte que some e cliente cobrando.
+
+GANCHOS PREFERIDOS — CURTOS E POPULARES
+- "Vai travar justo na hora do gol?"
+- "Cansado de chamar o suporte e ninguém responder?"
+- "Filme travando na melhor parte?"
+- "Seu streaming te deixa na mão quando você mais precisa?"
+- "Chega de passar raiva na frente da TV."
+- "Você paga pra assistir ou pra esperar carregar?"
+
+IDENTIDADE VISUAL OBRIGATÓRIA
+- Estética brasileira de anúncio premium, forte, comercial e cinematográfica.
+- Visual realista, moderno, com acabamento de alto nível.
+- Azul elétrico, vermelho, prata/cromado, preto e branco.
+- Contraste alto, luz cinematográfica, neon controlado e profundidade.
+- Títulos grandes, 3D/alto-relevo, muito legíveis no celular.
+- Pessoas reais, sala de TV, estádio, TV grande e situações que mostrem a dor.
+- Layout em blocos claros; impactante sem virar bagunça.
+- NÃO fazer arte minimalista genérica, cards corporativos ou muito espaço vazio.
+- NÃO usar inglês visível.
+- NÃO inventar marcas, canais, clubes, filmes ou personagens de terceiros.
+- Todo texto visível na arte deve estar em PORTUGUÊS BRASILEIRO.
+- Se a arte tiver palavra em inglês, texto ilegível ou aparência genérica, ela deve ser REPROVADA.
+
+PADRÃO DE TEXTO DA ARTE
+- Uma headline de no máximo 7 palavras.
+- Uma linha de apoio de no máximo 12 palavras.
+- Um CTA curto.
+- Não colocar parágrafos na imagem.
+- CTA visual padrão: "ACESSE GLOBALPLAY.FUN".
+- Nome da marca visível: "GLOBAL PLAY".
+
+CLIENTE FINAL
+- Trabalhar primeiro a dor: travamento, delay, suporte ou conteúdo.
+- Depois mostrar solução visual: tranquilidade, entretenimento, TV/filmes/séries.
+- Quando usar preço, usar apenas valores confirmados:
   • 1 MÊS — R$ 29,99
   • 2 MESES — R$ 49,99
   • 3 MESES — R$ 69,99
-- CTA principal: "ACESSE GLOBALPLAY.FUN" ou "ASSISTA AGORA".
-- WhatsApp de apoio quando fizer sentido: "(21) 96481-6185".
-- Rodapé opcional: "GLOBAL PLAY | MAIS QUE STREAMING, É VOCÊ NO CONTROLE".
 
-MODELO VISUAL — REVENDEDOR
-- Dor principal: servidor que trava, suporte que some, queda em jogo/série.
-- Solução visual: estabilidade, suporte, painel e oportunidade comercial.
-- Visual forte, premium, sem prometer lucro garantido.
-- CTA: "VENHA SER REVENDEDOR" e/ou "ACESSE GLOBALPLAY.FUN".
+REVENDEDOR
+- Dor: instabilidade, fornecedor que some, suporte ruim, cliente cobrando.
+- Solução: estabilidade, suporte e oportunidade comercial.
+- Nunca prometer lucro garantido.
 
-MODELO VISUAL — ESPORTES
-- Estádio diurno, gramado realista, arquibancada, bola e clima de jogo.
-- Painel de informações transparente e limpo.
-- Evitar excesso de azul/verde.
-- Título 3D forte.
-- Não inventar jogos, times ou transmissões sem dados atuais.
+ESPORTES
+- Estádio/TV com jogo genérico, sem escudos nem marcas quando não houver dados confirmados.
+- Explorar a tensão de "travar na hora do gol" e "spoiler do vizinho".
+- Painel limpo, título forte e leitura instantânea.
 
-TEXTO E LEGENDA
-- Brasileiro não quer ler texto longo: legenda simples e rápida.
-- Máximo recomendado: 3 frases curtas antes das hashtags.
-- Primeira linha deve chamar atenção.
-- Uma única ideia principal.
-- Nada de linguagem corporativa, técnica ou rebuscada.
-- Evitar frases como "avalie seu objetivo", "perfil de utilização", "condições disponíveis" e similares.
+LEGENDA
+- Português brasileiro simples.
+- Primeira linha forte.
+- No máximo 3 frases curtas antes das hashtags.
+- Uma única ideia por post.
+- Evitar linguagem corporativa como "avalie seu objetivo", "perfil de utilização", "condições disponíveis".
 - CTA padrão: "Conheça os planos em globalplay.fun".
-- Não pedir para enviar palavra no Direct.
-- Não fazer atendimento pelo Direct; o Direct só encaminha para o site.
+- Não pedir palavra no Direct.
+- Sempre usar hashtags relevantes; sem parede de hashtags.
 
-QUALIDADE MÍNIMA DA ARTE
-- Deve parecer anúncio profissional pronto para Instagram, não rascunho de IA.
-- Deve ser entendida em 2 segundos no celular.
-- Texto principal grande e legível.
-- Sem palavras em inglês.
-- Sem texto aleatório, ilegível ou inventado.
-- Sem composição vazia.
-- Sem excesso de texto.
-- Se a arte não atingir esse padrão, REPROVAR E GERAR NOVAMENTE.
+REGRA DE QUALIDADE
+- A arte precisa ser entendida em até 2 segundos no celular.
+- Precisa parecer anúncio profissional da Global Play, não rascunho de IA.
+- Se houver inglês, texto aleatório, tipografia quebrada, visual genérico ou baixa legibilidade: reprovar e gerar novamente.
 `;
 
 export const GLOBAL_PLAY_DEFAULT_HASHTAGS = [
@@ -75,8 +86,8 @@ export const GLOBAL_PLAY_DEFAULT_HASHTAGS = [
   "#TVAoVivo",
   "#FilmesESeries",
   "#Entretenimento",
+  "#Futebol",
   "#DiversaoEmCasa",
-  "#AssistaOnline",
   "#Brasil"
 ];
 
