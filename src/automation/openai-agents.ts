@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { env } from "../config/env.js";
-import { GLOBAL_PLAY_CREATIVE_DNA, GLOBAL_PLAY_DEFAULT_HASHTAGS, GLOBAL_PLAY_SITE_CTA } from "../brand/global-play-style.js";
+import { GLOBAL_PLAY_COMMENT_CTA, GLOBAL_PLAY_CREATIVE_DNA, GLOBAL_PLAY_DEFAULT_HASHTAGS } from "../brand/global-play-style.js";
 import { renderGlobalPlayCreative } from "./creative-renderer.js";
 import type { ViralResearch } from "./viral-research.js";
 import type { AccountAudit } from "./instagram-insights.js";
@@ -28,11 +28,14 @@ function cleanHashtags(value: unknown, topic: string) {
 }
 
 function finalizeCaption(rawCaption: string, topic: string, hashtags: unknown) {
-  const bodyLines = rawCaption.split("\n").filter((line) => !line.trim().startsWith("#")).join(" ").trim();
+  const bodyLines = rawCaption.split("\n")
+    .filter((line) => !line.trim().startsWith("#"))
+    .join(" ")
+    .replace(/Digite\s+["“”']?QUERO["“”']?[^.!?]*(?:[.!?]|$)/gi, "")
+    .trim();
   const sentences = bodyLines.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, 3);
-  let body = sentences.join(" ").trim();
-  if (!/globalplay\.fun/i.test(body)) body = `${body}${body ? " " : ""}${GLOBAL_PLAY_SITE_CTA}.`;
-  return `${body}\n\n${cleanHashtags(hashtags, topic).join(" ")}`;
+  const body = sentences.join(" ").trim();
+  return `${body}${body ? "\n\n" : ""}${GLOBAL_PLAY_COMMENT_CTA}\n\n${cleanHashtags(hashtags, topic).join(" ")}`;
 }
 
 export async function plannerAgent(research: ViralResearch, audit: AccountAudit) {
@@ -62,7 +65,7 @@ export async function creatorAgent(topic: string, objective: string, research: V
     model: env.OPENAI_MODEL,
     instructions: `Você é o diretor criativo da Global Play (${env.BRAND_INSTAGRAM}).
 Crie legenda curta + headline + apoio + descrição de FUNDO VISUAL SEM TEXTO.
-Legenda: até 3 frases, CTA para globalplay.fun, 5 a 8 hashtags, sem Direct e sem linguagem corporativa.
+Legenda: até 3 frases curtas, 5 a 8 hashtags, sem linguagem corporativa. A aplicação acrescentará obrigatoriamente o CTA para comentar QUERO; não peça palavra no Direct e não substitua esse CTA por outro.
 Arte: cinematográfica, realista, forte, brasileira, mostrando a dor em 2 segundos.
 O imagePrompt deve pedir uma cena SEM QUALQUER TEXTO, LOGO, LETRA, NÚMERO OU INTERFACE LEGÍVEL. A aplicação vai sobrepor o texto depois.
 Não use logos de terceiros.
