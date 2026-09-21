@@ -27,7 +27,7 @@ const envSchema = z.object({
   BRAND_NAME: z.string().default("Global Play"),
   BRAND_INSTAGRAM: z.string().default("@globalplay_streaming"),
   BRAND_SITE_URL: z.string().url().default("https://globalplay.fun"),
-  BRAND_WHATSAPP_URL: z.string().url().default("https://wa.me/5521964816185"),
+  BRAND_WHATSAPP_URL: z.string().url().default("https://wa.me/5521964816185?text=Ol%C3%A1%21%20Vim%20pelo%20Instagram%20da%20Global%20Play%20e%20quero%20saber%20mais."),
   BRAND_OBJECTIVE: z.string().default("atrair assinantes e revendedores com conteúdo claro, útil e comercial")
 });
 
