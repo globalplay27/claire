@@ -18,7 +18,7 @@ function parseJson(text: string): any {
 }
 
 function cleanHashtags(value: unknown, topic: string) {
-  const fromModel = Array.isArray(value) ? value.map(String).filter((tag) => /^#[A-Za-zÀ-ÿ0-9_]+$/.test(tag)).slice(0, 8) : [];
+  const fromModel = Array.isArray(value) ? value.map(String).filter((tag) => /^#[A-Za-zÀ-ÿ0-9_]+$/.test(tag) && !/semtrav|zerotrav/i.test(tag)).slice(0, 8) : [];
   const topicTags: string[] = [];
   const lower = topic.toLowerCase();
   if (/futebol|jogo|gol|delay/.test(lower)) topicTags.push("#Futebol", "#FutebolAoVivo");
