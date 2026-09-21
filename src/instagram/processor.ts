@@ -11,16 +11,12 @@ import {
 import { sendDirectMessage, sendPrivateReply } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
-function whatsappHandoffMessage(triggerKeyword?: string) {
+function siteHandoffMessage(triggerKeyword?: string) {
   const intro = triggerKeyword
     ? `Oi! 😊 Eu sou a Claire, assistente virtual da Global Play. Vi que você comentou ${triggerKeyword.toUpperCase()}.`
     : "Oi! 😊 Eu sou a Claire, assistente virtual da Global Play.";
 
-  if (env.BRAND_WHATSAPP_URL) {
-    return `${intro} Para continuar seu atendimento com nossa equipe, fale com a gente no WhatsApp: ${env.BRAND_WHATSAPP_URL}`;
-  }
-
-  return `${intro} Nosso atendimento comercial continua pelo WhatsApp. O link ainda não está configurado aqui no Instagram.`;
+  return `${intro} Lá no nosso site você encontra planos, informações e o acesso ao atendimento. Acesse: ${env.BRAND_SITE_URL}`;
 }
 
 export async function processInstagramEvent(event: InstagramEvent) {
@@ -37,10 +33,10 @@ export async function processInstagramEvent(event: InstagramEvent) {
         instagramUsername: event.username,
         triggerKeyword: keyword,
         campaign: event.mediaId,
-        stage: "whatsapp_handoff_pending"
+        stage: "site_handoff_pending"
       });
 
-      const reply = whatsappHandoffMessage(keyword);
+      const reply = siteHandoffMessage(keyword);
       const result = await sendPrivateReply(event.commentId, reply);
       await saveMessage({
         leadId: lead.id,
@@ -48,13 +44,13 @@ export async function processInstagramEvent(event: InstagramEvent) {
         body: reply,
         metaMessageId: result?.message_id
       });
-      await setLeadStage(lead.id, "whatsapp_handoff");
+      await setLeadStage(lead.id, "site_handoff");
       return;
     }
 
     const existing = await findLeadByInstagramUserId(event.senderId);
 
-    if (existing?.stage === "whatsapp_handoff") {
+    if (existing?.stage === "site_handoff") {
       await saveMessage({
         leadId: existing.id,
         direction: "inbound",
@@ -76,7 +72,7 @@ export async function processInstagramEvent(event: InstagramEvent) {
       metaMessageId: event.messageId
     });
 
-    const reply = whatsappHandoffMessage();
+    const reply = siteHandoffMessage();
     const sent = await sendDirectMessage(event.senderId, reply);
     await saveMessage({
       leadId: lead.id,
@@ -84,7 +80,7 @@ export async function processInstagramEvent(event: InstagramEvent) {
       body: reply,
       metaMessageId: sent?.message_id
     });
-    await setLeadStage(lead.id, "whatsapp_handoff");
+    await setLeadStage(lead.id, "site_handoff");
   } catch (error) {
     await releaseEvent(event.eventId).catch(() => undefined);
     throw error;
