@@ -1,10 +1,12 @@
 import { autoPostHours, env, getPublicBaseUrl } from "../config/env.js";
 import { creatorAgent, imageAgent, plannerAgent } from "./openai-agents.js";
 import { publishImagePost } from "./meta-publisher.js";
+import { viralResearchAgent } from "./viral-research.js";
+import { auditOwnInstagramContent } from "./instagram-insights.js";
 import {
   createJob,
   getPublishableJobs,
-  hasJobForLocalDay,
+  hasJobForLocalSlot,
   markFailed,
   markPublished,
   markPublishing,
@@ -29,45 +31,58 @@ function saoPauloParts(date = new Date()) {
   return { dayKey: `${value("year")}-${value("month")}-${value("day")}`, hour: Number(value("hour")) };
 }
 
-function nextSchedule(date = new Date()) {
-  const { hour } = saoPauloParts(date);
-  const chosen = [...autoPostHours].sort((a,b) => a-b).find((h) => h >= hour) ?? autoPostHours[0] ?? 18;
-  const formatter = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric", month: "2-digit", day: "2-digit"
-  });
-  const [y,m,d] = formatter.format(date).split("-").map(Number);
-  // São Paulo is UTC-3 in current deployment context; scheduling is kept explicit for this account.
-  return new Date(Date.UTC(y!, (m! - 1), d!, chosen + 3, 0, 0));
-}
-
 export async function runAutomationCycle() {
   if (!env.AUTOMATION_ENABLED || busy) return;
   busy = true;
+
   try {
     const baseUrl = getPublicBaseUrl();
     if (!baseUrl) throw new Error("PUBLIC_BASE_URL/RAILWAY_PUBLIC_DOMAIN indisponível");
 
     const { dayKey, hour } = saoPauloParts();
-    const sortedHours = [...autoPostHours].sort((a, b) => a - b);
-    const firstScheduledHour = sortedHours[0] ?? 18;
-    const hasJobToday = await hasJobForLocalDay(dayKey);
+    const slotHour = autoPostHours.find((scheduledHour) => scheduledHour === hour);
 
-    // If the service starts after the scheduled time and nothing was posted today,
-    // create the daily post immediately instead of waiting until tomorrow.
-    if (!hasJobToday && hour >= firstScheduledHour) {
-      const plan = await plannerAgent();
-      const job = await createJob({
-        agent: "planner",
-        topic: plan.topic,
-        objective: plan.objective,
-        scheduledFor: new Date()
-      });
-      const content = await creatorAgent(job.topic, job.objective);
-      await setCreatedContent(job.id, content.caption, content.imagePrompt);
-      const image = await imageAgent(content.imagePrompt);
-      const assetId = await saveAsset(job.id, image);
-      await recordRun("creator", "success", `job=${job.id}; asset=${assetId}`);
+    if (slotHour !== undefined && !(await hasJobForLocalSlot(dayKey, slotHour))) {
+      let jobId: string | null = null;
+      try {
+        const [research, audit] = await Promise.all([
+          viralResearchAgent(),
+          auditOwnInstagramContent()
+        ]);
+
+        await recordRun("researcher", "success", JSON.stringify({
+          summary: research.summary,
+          signals: research.signals.slice(0, 4),
+          angles: research.angles.slice(0, 4)
+        }));
+        await recordRun("auditor", audit.available ? "success" : "partial", JSON.stringify({
+          sampleSize: audit.sampleSize,
+          summary: audit.summary,
+          top: audit.topPatterns.slice(0, 3),
+          weak: audit.weakPatterns.slice(0, 2)
+        }));
+
+        const plan = await plannerAgent(research, audit);
+        const job = await createJob({
+          agent: "planner",
+          topic: plan.topic,
+          objective: plan.objective,
+          scheduledFor: new Date()
+        });
+        jobId = job.id;
+
+        const content = await creatorAgent(job.topic, job.objective, research, audit);
+        await setCreatedContent(job.id, content.caption, content.imagePrompt);
+
+        const image = await imageAgent(content.imagePrompt);
+        const assetId = await saveAsset(job.id, image);
+        await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; slot=${slotHour}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (jobId) await markFailed(jobId, message).catch(() => undefined);
+        await recordRun("creator", "failed", message).catch(() => undefined);
+        console.error("Creative pipeline failed", message);
+      }
     }
 
     for (const job of await getPublishableJobs()) {
@@ -105,5 +120,5 @@ export function startAutomation() {
   void runAutomationCycle();
   timer = setInterval(() => void runAutomationCycle(), env.AUTOMATION_POLL_SECONDS * 1000);
   timer.unref();
-  console.log(`Instagram automation enabled; polling every ${env.AUTOMATION_POLL_SECONDS}s`);
+  console.log(`Instagram automation enabled; polling every ${env.AUTOMATION_POLL_SECONDS}s; post hours=${autoPostHours.join(",")}`);
 }
