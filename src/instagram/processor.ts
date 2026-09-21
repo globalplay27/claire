@@ -8,6 +8,7 @@ import {
   recentConversation,
   releaseEvent,
   saveMessage,
+  setLeadStage,
   updateLeadState,
   upsertLead
 } from "../leads/repository.js";
@@ -40,7 +41,7 @@ export async function processInstagramEvent(event: InstagramEvent) {
         body: reply,
         metaMessageId: result?.message_id
       });
-      await dbUpdateLeadStage(lead.id, "private_reply_sent");
+      await setLeadStage(lead.id, "private_reply_sent");
       return;
     }
 
@@ -91,13 +92,4 @@ export async function processInstagramEvent(event: InstagramEvent) {
     await releaseEvent(event.eventId).catch(() => undefined);
     throw error;
   }
-}
-
-async function dbUpdateLeadStage(leadId: string, stage: string) {
-  await updateLeadState({
-    leadId,
-    temperature: "warm",
-    needsHuman: false,
-    stage
-  });
 }
