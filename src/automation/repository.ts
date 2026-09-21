@@ -79,7 +79,8 @@ export async function getPublishableJobs(now = new Date()) {
     `SELECT j.*, a.mime_type AS image_mime_type
      FROM automation_jobs j
      LEFT JOIN content_assets a ON a.id=j.asset_id
-     WHERE j.status='ready' AND j.asset_id IS NOT NULL
+     WHERE (j.status='ready' OR (j.status='failed' AND j.attempts < 3))
+       AND j.asset_id IS NOT NULL
        AND j.scheduled_for <= $1
      ORDER BY j.scheduled_for ASC
      LIMIT 3`,
