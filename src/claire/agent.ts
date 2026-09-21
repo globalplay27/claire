@@ -31,11 +31,19 @@ export async function generateClaireReply(
     .map((message) => `${message.direction === "inbound" ? "CLIENTE" : "CLAIRE"}: ${message.body}`)
     .join("\n");
 
-  const response = await client.responses.create({
-    model: env.OPENAI_MODEL,
-    instructions: CLAIRE_SYSTEM_PROMPT,
-    input: `Histórico da conversa:\n${history}\n\nCLIENTE: ${userText}\n\nResponda somente com a próxima mensagem da Claire.`
-  });
+  try {
+    const response = await client.responses.create({
+      model: env.OPENAI_MODEL,
+      instructions: CLAIRE_SYSTEM_PROMPT,
+      input: `Histórico da conversa:\n${history}\n\nCLIENTE: ${userText}\n\nResponda somente com a próxima mensagem da Claire.`
+    });
 
-  return response.output_text.trim() || fallbackReply(userText);
+    return response.output_text.trim() || fallbackReply(userText);
+  } catch (error) {
+    console.warn(
+      "OpenAI indisponível; usando resposta de fallback.",
+      error instanceof Error ? error.message : "erro desconhecido"
+    );
+    return fallbackReply(userText);
+  }
 }
