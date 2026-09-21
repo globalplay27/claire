@@ -89,12 +89,13 @@ export async function getPublishableJobs(now = new Date()) {
   return result.rows.map(rowToJob);
 }
 
-export async function hasJobForLocalDay(dayKey: string) {
+export async function hasJobForLocalSlot(dayKey: string, hour: number) {
   const result = await db.query(
     `SELECT 1 FROM automation_jobs
      WHERE to_char(scheduled_for AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD')=$1
+       AND EXTRACT(HOUR FROM scheduled_for AT TIME ZONE 'America/Sao_Paulo')=$2
      LIMIT 1`,
-    [dayKey]
+    [dayKey, hour]
   );
   return (result.rowCount ?? 0) > 0;
 }
