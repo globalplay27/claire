@@ -8,15 +8,15 @@ import {
   setLeadStage,
   upsertLead
 } from "../leads/repository.js";
-import { sendDirectMessageWithWebsite, sendPrivateReplyWithWebsite } from "./meta-client.js";
+import { sendDirectMessageWithContacts, sendPrivateReplyWithContacts } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
-function siteHandoffMessage(triggerKeyword?: string) {
+function contactChoiceMessage(triggerKeyword?: string) {
   const intro = triggerKeyword
     ? `Oi! 😊 Eu sou a Claire, assistente virtual da Global Play. Vi que você comentou ${triggerKeyword.toUpperCase()}.`
     : "Oi! 😊 Eu sou a Claire, assistente virtual da Global Play.";
 
-  return `${intro} No nosso site você encontra planos, informações e acesso ao atendimento.`;
+  return `${intro} Como você prefere continuar? Escolha uma opção abaixo e eu já te direciono.`;
 }
 
 export async function processInstagramEvent(event: InstagramEvent) {
@@ -36,12 +36,17 @@ export async function processInstagramEvent(event: InstagramEvent) {
         stage: "site_handoff_pending"
       });
 
-      const reply = siteHandoffMessage(keyword);
-      const result = await sendPrivateReplyWithWebsite(event.commentId, reply, env.BRAND_SITE_URL);
+      const reply = contactChoiceMessage(keyword);
+      const result = await sendPrivateReplyWithContacts(
+        event.commentId,
+        reply,
+        env.BRAND_SITE_URL,
+        env.BRAND_WHATSAPP_URL
+      );
       await saveMessage({
         leadId: lead.id,
         direction: "outbound",
-        body: `${reply} [Acessar site]`,
+        body: `${reply} [Falar no WhatsApp] [Acessar site]`,
         metaMessageId: result?.message_id
       });
       await setLeadStage(lead.id, "site_handoff");
@@ -72,12 +77,17 @@ export async function processInstagramEvent(event: InstagramEvent) {
       metaMessageId: event.messageId
     });
 
-    const reply = siteHandoffMessage();
-    const sent = await sendDirectMessageWithWebsite(event.senderId, reply, env.BRAND_SITE_URL);
+    const reply = contactChoiceMessage();
+    const sent = await sendDirectMessageWithContacts(
+      event.senderId,
+      reply,
+      env.BRAND_SITE_URL,
+      env.BRAND_WHATSAPP_URL
+    );
     await saveMessage({
       leadId: lead.id,
       direction: "outbound",
-      body: `${reply} [Acessar site]`,
+      body: `${reply} [Falar no WhatsApp] [Acessar site]`,
       metaMessageId: sent?.message_id
     });
     await setLeadStage(lead.id, "site_handoff");
