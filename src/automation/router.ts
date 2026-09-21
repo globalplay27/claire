@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { env } from "../config/env.js";
 import { getAsset, listRecentJobs } from "./repository.js";
-import { runAutomationCycle } from "./orchestrator.js";
+import { runAutomationCycle, runAutomationNow } from "./orchestrator.js";
 
 export const automationRouter = Router();
 
@@ -24,6 +24,14 @@ automationRouter.post("/run", async (req, res) => {
   if (!adminAuthorized(req)) return void res.sendStatus(401);
   await runAutomationCycle();
   res.json({ ok: true });
+});
+
+automationRouter.post("/run-now", async (req, res) => {
+  if (!adminAuthorized(req)) return void res.sendStatus(401);
+  void runAutomationNow().catch((error) => {
+    console.error("Manual run-now failed", error instanceof Error ? error.message : String(error));
+  });
+  res.status(202).json({ ok: true, started: true });
 });
 
 automationRouter.get("/assets/:id", async (req, res) => {

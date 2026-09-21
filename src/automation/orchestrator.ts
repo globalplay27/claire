@@ -31,6 +31,73 @@ function saoPauloParts(date = new Date()) {
   return { dayKey: `${value("year")}-${value("month")}-${value("day")}`, hour: Number(value("hour")) };
 }
 
+async function createFreshPost(label: string) {
+  const baseUrl = getPublicBaseUrl();
+  if (!baseUrl) throw new Error("PUBLIC_BASE_URL/RAILWAY_PUBLIC_DOMAIN indisponível");
+
+  let jobId: string | null = null;
+  try {
+    const [research, audit] = await Promise.all([
+      viralResearchAgent(),
+      auditOwnInstagramContent()
+    ]);
+
+    await recordRun("researcher", "success", JSON.stringify({
+      source: label,
+      summary: research.summary,
+      signals: research.signals.slice(0, 4),
+      angles: research.angles.slice(0, 4)
+    }));
+    await recordRun("auditor", audit.available ? "success" : "partial", JSON.stringify({
+      source: label,
+      sampleSize: audit.sampleSize,
+      summary: audit.summary,
+      top: audit.topPatterns.slice(0, 3),
+      weak: audit.weakPatterns.slice(0, 2)
+    }));
+
+    const plan = await plannerAgent(research, audit);
+    const job = await createJob({
+      agent: "planner",
+      topic: plan.topic,
+      objective: plan.objective,
+      scheduledFor: new Date()
+    });
+    jobId = job.id;
+
+    const content = await creatorAgent(job.topic, job.objective, research, audit);
+    await setCreatedContent(job.id, content.caption, content.imagePrompt);
+
+    const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
+    const assetId = await saveAsset(job.id, image);
+    await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; source=${label}`);
+
+    await markPublishing(job.id);
+    const imageUrl = `${baseUrl}/automation/assets/${assetId}`;
+    const mediaId = await publishImagePost(imageUrl, content.caption);
+    await markPublished(job.id, mediaId);
+    await recordRun("publisher", "success", `job=${job.id}; media=${mediaId}; source=${label}`);
+
+    return { jobId: job.id, assetId, mediaId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (jobId) await markFailed(jobId, message).catch(() => undefined);
+    await recordRun("creator", "failed", `source=${label}; ${message}`).catch(() => undefined);
+    console.error("Manual creative pipeline failed", message);
+    throw error;
+  }
+}
+
+export async function runAutomationNow() {
+  if (busy) throw new Error("Automação ocupada; tente novamente em instantes");
+  busy = true;
+  try {
+    return await createFreshPost("manual-now");
+  } finally {
+    busy = false;
+  }
+}
+
 export async function runAutomationCycle() {
   if (!env.AUTOMATION_ENABLED || busy) return;
   busy = true;
