@@ -70,8 +70,9 @@ LEGENDA
 - No máximo 3 frases curtas antes das hashtags.
 - Uma única ideia por post.
 - Evitar linguagem corporativa como "avalie seu objetivo", "perfil de utilização", "condições disponíveis".
-- CTA padrão: "Conheça os planos em globalplay.fun".
-- Não pedir palavra no Direct.
+- CTA obrigatório em TODA legenda: "Digite \"QUERO\" nos comentários para saber mais."
+- O CTA deve pedir comentário público com QUERO; não pedir a palavra no Direct.
+- O site e o WhatsApp serão oferecidos pela Claire em botões clicáveis após o comentário.
 - Sempre usar hashtags relevantes; sem parede de hashtags.
 
 REGRA DE QUALIDADE
@@ -92,3 +93,4 @@ export const GLOBAL_PLAY_DEFAULT_HASHTAGS = [
 ];
 
 export const GLOBAL_PLAY_SITE_CTA = "Conheça os planos em globalplay.fun";
+export const GLOBAL_PLAY_COMMENT_CTA = 'Digite "QUERO" nos comentários para saber mais.';
