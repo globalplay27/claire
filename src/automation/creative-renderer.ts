@@ -25,8 +25,8 @@ function tspans(lines: string[], x: number, lineHeight: number) {
 }
 
 export async function renderGlobalPlayCreative(baseImage: Buffer, headline: string, subheadline: string) {
-  const headlineLines = wrapText(headline.toUpperCase(), 24, 2);
-  const subLines = wrapText(subheadline, 42, 2);
+  const headlineLines = wrapText(headline.toUpperCase(), 18, 2);
+  const subLines = wrapText(subheadline, 32, 2);
   const svg = `
 <svg width="1080" height="1350" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -51,9 +51,9 @@ export async function renderGlobalPlayCreative(baseImage: Buffer, headline: stri
   <rect y="870" width="1080" height="480" fill="url(#bottomShade)"/>
   <rect x="58" y="54" width="260" height="62" rx="31" fill="#080b12" fill-opacity="0.82" stroke="#e31d2b" stroke-width="2"/>
   <text x="188" y="95" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="30" font-weight="800" letter-spacing="2" fill="url(#metal)">GLOBAL PLAY</text>
-  <text x="58" y="190" font-family="DejaVu Sans,sans-serif" font-size="82" font-weight="900" fill="#ffffff" stroke="#05070d" stroke-width="2" paint-order="stroke" filter="url(#shadow)">${tspans(headlineLines, 58, 92)}</text>
+  <text x="58" y="190" font-family="DejaVu Sans,sans-serif" font-size="64" font-weight="900" fill="#ffffff" stroke="#05070d" stroke-width="2" paint-order="stroke" filter="url(#shadow)">${tspans(headlineLines, 58, 72)}</text>
   <rect x="58" y="1015" width="18" height="122" rx="9" fill="#e31d2b"/>
-  <text x="100" y="1056" font-family="DejaVu Sans,sans-serif" font-size="43" font-weight="700" fill="#ffffff" filter="url(#shadow)">${tspans(subLines, 100, 54)}</text>
+  <text x="100" y="1056" font-family="DejaVu Sans,sans-serif" font-size="34" font-weight="700" fill="#ffffff" filter="url(#shadow)">${tspans(subLines, 100, 44)}</text>
   <rect x="58" y="1192" width="964" height="104" rx="24" fill="#e31d2b" stroke="#ff4a55" stroke-width="2"/>
   <text x="540" y="1258" text-anchor="middle" font-family="DejaVu Sans,sans-serif" font-size="40" font-weight="900" letter-spacing="1" fill="#ffffff">ACESSE GLOBALPLAY.FUN</text>
 </svg>`;
