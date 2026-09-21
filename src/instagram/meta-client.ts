@@ -19,6 +19,25 @@ async function metaPost(body: unknown) {
   return json as { message_id?: string; recipient_id?: string } | null;
 }
 
+function websiteButtonMessage(text: string, url: string) {
+  return {
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "button",
+        text,
+        buttons: [
+          {
+            type: "web_url",
+            url,
+            title: "Acessar site"
+          }
+        ]
+      }
+    }
+  };
+}
+
 export async function sendPrivateReply(commentId: string, text: string) {
   return metaPost({
     recipient: { comment_id: commentId },
@@ -26,9 +45,23 @@ export async function sendPrivateReply(commentId: string, text: string) {
   });
 }
 
+export async function sendPrivateReplyWithWebsite(commentId: string, text: string, url: string) {
+  return metaPost({
+    recipient: { comment_id: commentId },
+    message: websiteButtonMessage(text, url)
+  });
+}
+
 export async function sendDirectMessage(instagramScopedUserId: string, text: string) {
   return metaPost({
     recipient: { id: instagramScopedUserId },
     message: { text }
+  });
+}
+
+export async function sendDirectMessageWithWebsite(instagramScopedUserId: string, text: string, url: string) {
+  return metaPost({
+    recipient: { id: instagramScopedUserId },
+    message: websiteButtonMessage(text, url)
   });
 }
