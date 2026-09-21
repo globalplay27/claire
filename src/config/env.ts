@@ -19,6 +19,7 @@ const envSchema = z.object({
   LEAD_KEYWORDS: z.string().default("quero,preço,preco,valor,teste,saiba mais"),
 
   AUTOMATION_ENABLED: z.string().default("false").transform((v) => v === "true"),
+  MANUAL_POST_ON_START: z.string().default("false").transform((v) => v === "true"),
   AUTOMATION_POLL_SECONDS: z.coerce.number().int().min(30).default(60),
   AUTOMATION_ADMIN_TOKEN: z.string().min(8).optional(),
   AUTO_POST_HOURS: z.string().default("9,12,18"),
