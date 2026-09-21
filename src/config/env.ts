@@ -8,6 +8,7 @@ const envSchema = z.object({
   OPENAI_MODEL: z.string().default("gpt-5.6-luna"),
   OPENAI_IMAGE_MODEL: z.string().default("gpt-image-1"),
   META_APP_SECRET: z.string().min(1).optional(),
+  INSTAGRAM_APP_SECRET: z.string().min(1).optional(),
   META_VERIFY_TOKEN: z.string().min(8),
   INSTAGRAM_ACCESS_TOKEN: z.string().min(1),
   INSTAGRAM_ACCOUNT_ID: z.string().min(1),
