@@ -183,6 +183,12 @@ export async function runAutomationCycle() {
 }
 
 export function startAutomation() {
+  if (env.MANUAL_POST_ON_START) {
+    void runAutomationNow()
+      .then((result) => console.log(`MANUAL_POST_ON_START_SUCCESS media=${result.mediaId}`))
+      .catch((error) => console.error("MANUAL_POST_ON_START_FAILED", error instanceof Error ? error.message : String(error)));
+  }
+
   if (!env.AUTOMATION_ENABLED || timer) return;
   void runAutomationCycle();
   timer = setInterval(() => void runAutomationCycle(), env.AUTOMATION_POLL_SECONDS * 1000);
