@@ -1,5 +1,6 @@
 export type AutomationAgent =
   | "planner"
+  | "researcher"
   | "creator"
   | "publisher"
   | "engagement"

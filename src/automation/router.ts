@@ -13,7 +13,7 @@ function adminAuthorized(req: any) {
 automationRouter.get("/status", async (_req, res) => {
   res.json({
     enabled: env.AUTOMATION_ENABLED,
-    agents: ["planner", "creator", "publisher", "engagement", "auditor"],
+    agents: ["researcher", "planner", "creator", "publisher", "engagement", "auditor"],
     openaiConfigured: Boolean(env.OPENAI_API_KEY),
     metaSignatureConfigured: Boolean(env.META_APP_SECRET),
     recentJobs: await listRecentJobs(10)
