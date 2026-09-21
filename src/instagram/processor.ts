@@ -13,10 +13,17 @@ import type { InstagramEvent } from "./events.js";
 
 function contactChoiceMessage(triggerKeyword?: string) {
   const intro = triggerKeyword
-    ? `Oi! 😊 Eu sou a Claire, assistente virtual da Global Play. Vi que você comentou ${triggerKeyword.toUpperCase()}.`
+    ? `Oi! 😊 Vi que você escreveu ${triggerKeyword.toUpperCase()}.`
     : "Oi! 😊 Eu sou a Claire, assistente virtual da Global Play.";
 
-  return `${intro} Como você prefere continuar? Escolha uma opção abaixo e eu já te direciono.`;
+  return `${intro}
+
+Como você prefere continuar?
+
+📲 WhatsApp: (21) 96481-6185
+🌐 Site: globalplay.fun
+
+Escolha uma opção abaixo e eu já te direciono.`;
 }
 
 export async function processInstagramEvent(event: InstagramEvent) {
@@ -62,6 +69,23 @@ export async function processInstagramEvent(event: InstagramEvent) {
         body: event.text,
         metaMessageId: event.messageId
       });
+
+      const keyword = detectLeadKeyword(event.text);
+      if (keyword) {
+        const reply = contactChoiceMessage(keyword);
+        const sent = await sendDirectMessageWithContacts(
+          event.senderId,
+          reply,
+          env.BRAND_SITE_URL,
+          env.BRAND_WHATSAPP_URL
+        );
+        await saveMessage({
+          leadId: existing.id,
+          direction: "outbound",
+          body: `${reply} [Falar no WhatsApp] [Acessar site]`,
+          metaMessageId: sent?.message_id
+        });
+      }
       return;
     }
 
