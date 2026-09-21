@@ -21,12 +21,12 @@ const envSchema = z.object({
   AUTOMATION_ENABLED: z.string().default("false").transform((v) => v === "true"),
   AUTOMATION_POLL_SECONDS: z.coerce.number().int().min(30).default(60),
   AUTOMATION_ADMIN_TOKEN: z.string().min(8).optional(),
-  AUTO_POST_HOURS: z.string().default("9,15,23"),
+  AUTO_POST_HOURS: z.string().default("9,12,18"),
   PUBLIC_BASE_URL: z.string().url().optional(),
   BRAND_NAME: z.string().default("Global Play"),
   BRAND_INSTAGRAM: z.string().default("@globalplay_streaming"),
   BRAND_SITE_URL: z.string().url().default("https://globalplay.fun"),
-  BRAND_WHATSAPP_URL: z.string().url().optional().or(z.literal("")),
+  BRAND_WHATSAPP_URL: z.string().url().default("https://wa.me/5521964816185"),
   BRAND_OBJECTIVE: z.string().default("atrair assinantes e revendedores com conteúdo claro, útil e comercial")
 });
 
