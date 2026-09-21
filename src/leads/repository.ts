@@ -107,3 +107,7 @@ export async function claimEvent(eventId: string, eventType: string): Promise<bo
   );
   return (result.rowCount ?? 0) > 0;
 }
+
+export async function releaseEvent(eventId: string) {
+  await db.query("DELETE FROM processed_events WHERE event_id = $1", [eventId]);
+}
