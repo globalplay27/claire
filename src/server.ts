@@ -22,7 +22,7 @@ app.get("/health", async (_req, res) => {
       service: "claire-instagram-agent",
       automationEnabled: env.AUTOMATION_ENABLED,
       openaiConfigured: Boolean(env.OPENAI_API_KEY),
-      metaSignatureConfigured: Boolean(env.META_APP_SECRET)
+      instagramSignatureConfigured: Boolean(env.INSTAGRAM_APP_SECRET || env.META_APP_SECRET)
     });
   } catch {
     res.status(503).json({ ok: false, service: "claire-instagram-agent" });
