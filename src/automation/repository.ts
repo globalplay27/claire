@@ -94,6 +94,7 @@ export async function hasJobForLocalSlot(dayKey: string, hour: number) {
     `SELECT 1 FROM automation_jobs
      WHERE to_char(scheduled_for AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD')=$1
        AND EXTRACT(HOUR FROM scheduled_for AT TIME ZONE 'America/Sao_Paulo')=$2
+       AND NOT (status='failed' AND asset_id IS NULL)
      LIMIT 1`,
     [dayKey, hour]
   );

@@ -74,7 +74,7 @@ export async function runAutomationCycle() {
         const content = await creatorAgent(job.topic, job.objective, research, audit);
         await setCreatedContent(job.id, content.caption, content.imagePrompt);
 
-        const image = await imageAgent(content.imagePrompt);
+        const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
         const assetId = await saveAsset(job.id, image);
         await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; slot=${slotHour}`);
       } catch (error) {
