@@ -107,3 +107,14 @@ export async function claimEvent(eventId: string, eventType: string): Promise<bo
   );
   return (result.rowCount ?? 0) > 0;
 }
+
+export async function releaseEvent(eventId: string) {
+  await db.query("DELETE FROM processed_events WHERE event_id = $1", [eventId]);
+}
+
+export async function setLeadStage(leadId: string, stage: string) {
+  await db.query(
+    "UPDATE leads SET stage = $2, updated_at = NOW() WHERE id = $1",
+    [leadId, stage]
+  );
+}

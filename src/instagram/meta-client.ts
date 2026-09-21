@@ -1,9 +1,9 @@
 import { env } from "../config/env.js";
 
-const baseUrl = `https://graph.instagram.com/${env.META_API_VERSION}/${env.INSTAGRAM_ACCOUNT_ID}`;
+const messagesUrl = `https://graph.instagram.com/${env.META_API_VERSION}/me/messages`;
 
 async function metaPost(body: unknown) {
-  const response = await fetch(`${baseUrl}/messages`, {
+  const response = await fetch(messagesUrl, {
     method: "POST",
     headers: {
       authorization: `Bearer ${env.INSTAGRAM_ACCESS_TOKEN}`,
