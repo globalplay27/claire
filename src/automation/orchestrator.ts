@@ -49,13 +49,19 @@ export async function runAutomationCycle() {
     if (!baseUrl) throw new Error("PUBLIC_BASE_URL/RAILWAY_PUBLIC_DOMAIN indisponível");
 
     const { dayKey, hour } = saoPauloParts();
-    if (autoPostHours.includes(hour) && !(await hasJobForLocalDay(dayKey))) {
+    const sortedHours = [...autoPostHours].sort((a, b) => a - b);
+    const firstScheduledHour = sortedHours[0] ?? 18;
+    const hasJobToday = await hasJobForLocalDay(dayKey);
+
+    // If the service starts after the scheduled time and nothing was posted today,
+    // create the daily post immediately instead of waiting until tomorrow.
+    if (!hasJobToday && hour >= firstScheduledHour) {
       const plan = await plannerAgent();
       const job = await createJob({
         agent: "planner",
         topic: plan.topic,
         objective: plan.objective,
-        scheduledFor: nextSchedule()
+        scheduledFor: new Date()
       });
       const content = await creatorAgent(job.topic, job.objective);
       await setCreatedContent(job.id, content.caption, content.imagePrompt);
