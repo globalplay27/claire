@@ -5,11 +5,8 @@ type ConversationMessage = {
   body: string;
 };
 
-function whatsappReply() {
-  if (env.BRAND_WHATSAPP_URL) {
-    return `Para continuar seu atendimento com nossa equipe, fale com a gente no WhatsApp: ${env.BRAND_WHATSAPP_URL}`;
-  }
-  return "Nosso atendimento comercial continua pelo WhatsApp. O link ainda não está configurado aqui no Instagram.";
+function siteReply() {
+  return `Veja planos, informações e atendimento no site oficial da Global Play: ${env.BRAND_SITE_URL}`;
 }
 
 export async function generateClaireReply(
@@ -17,5 +14,5 @@ export async function generateClaireReply(
   _userText: string,
   _forceHandoff: boolean
 ): Promise<string> {
-  return whatsappReply();
+  return siteReply();
 }
