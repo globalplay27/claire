@@ -8,7 +8,7 @@ import {
   setLeadStage,
   upsertLead
 } from "../leads/repository.js";
-import { sendDirectMessage, sendPrivateReply } from "./meta-client.js";
+import { sendDirectMessageWithWebsite, sendPrivateReplyWithWebsite } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
 function siteHandoffMessage(triggerKeyword?: string) {
@@ -16,7 +16,7 @@ function siteHandoffMessage(triggerKeyword?: string) {
     ? `Oi! 😊 Eu sou a Claire, assistente virtual da Global Play. Vi que você comentou ${triggerKeyword.toUpperCase()}.`
     : "Oi! 😊 Eu sou a Claire, assistente virtual da Global Play.";
 
-  return `${intro} Lá no nosso site você encontra planos, informações e o acesso ao atendimento. Acesse: ${env.BRAND_SITE_URL}`;
+  return `${intro} No nosso site você encontra planos, informações e acesso ao atendimento.`;
 }
 
 export async function processInstagramEvent(event: InstagramEvent) {
@@ -37,11 +37,11 @@ export async function processInstagramEvent(event: InstagramEvent) {
       });
 
       const reply = siteHandoffMessage(keyword);
-      const result = await sendPrivateReply(event.commentId, reply);
+      const result = await sendPrivateReplyWithWebsite(event.commentId, reply, env.BRAND_SITE_URL);
       await saveMessage({
         leadId: lead.id,
         direction: "outbound",
-        body: reply,
+        body: `${reply} [Acessar site]`,
         metaMessageId: result?.message_id
       });
       await setLeadStage(lead.id, "site_handoff");
@@ -73,11 +73,11 @@ export async function processInstagramEvent(event: InstagramEvent) {
     });
 
     const reply = siteHandoffMessage();
-    const sent = await sendDirectMessage(event.senderId, reply);
+    const sent = await sendDirectMessageWithWebsite(event.senderId, reply, env.BRAND_SITE_URL);
     await saveMessage({
       leadId: lead.id,
       direction: "outbound",
-      body: reply,
+      body: `${reply} [Acessar site]`,
       metaMessageId: sent?.message_id
     });
     await setLeadStage(lead.id, "site_handoff");
