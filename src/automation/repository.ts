@@ -133,6 +133,21 @@ export async function recordRun(agent: AutomationAgent, status: string, detail?:
   );
 }
 
+export async function getRecentLearningMemory(limit = 12) {
+  const result = await db.query<{ agent: string; detail: string | null; created_at: Date }>(
+    `SELECT agent, detail, created_at FROM automation_runs
+     WHERE status IN ('success','partial')
+       AND agent IN ('researcher','auditor')
+       AND detail IS NOT NULL
+     ORDER BY created_at DESC LIMIT $1`,
+    [limit]
+  );
+  return result.rows
+    .map((row) => `${row.agent} ${new Date(row.created_at).toISOString()}: ${row.detail}`)
+    .join("\n")
+    .slice(0, 12000);
+}
+
 export async function listRecentJobs(limit = 20) {
   const result = await db.query(
     `SELECT j.*, a.mime_type AS image_mime_type

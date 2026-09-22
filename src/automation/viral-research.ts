@@ -49,7 +49,7 @@ function parseJson(text: string): any {
   return JSON.parse(raw);
 }
 
-export async function viralResearchAgent(): Promise<ViralResearch> {
+export async function viralResearchAgent(learningMemory = ""): Promise<ViralResearch> {
   if (!client) return fallbackResearch();
 
   try {
@@ -62,10 +62,11 @@ Use somente conteúdo público. Extraia MECANISMOS, não copie posts, slogans ou
 Não invente métricas. Não trate muita visualização isolada como prova de fórmula.
 Busque principalmente: dor recorrente, tipo de gancho, formato, mecanismo de retenção, humor/identificação, elementos compartilháveis e comentários.
 Não recomende pirataria nem links ilegais.
+Compare os sinais atuais com a memória histórica fornecida. Preserve padrões que continuam fortes, descarte padrões fracos e proponha pelo menos um teste novo. Não confunda correlação com garantia de viralização.
 ${GLOBAL_PLAY_CREATIVE_DNA}
 Retorne SOMENTE JSON válido:
 {"signals":["..."],"hookPatterns":["..."],"visualPatterns":["..."],"angles":["..."],"avoid":["..."],"summary":"..."}`,
-      input: "Pesquise agora o que está chamando atenção neste nicho e transforme em aprendizado para o próximo criativo da Global Play."
+      input: `Pesquise agora o que está chamando atenção neste nicho e transforme em aprendizado para o próximo criativo da Global Play.\n\nMEMÓRIA DE PESQUISAS E RESULTADOS ANTERIORES:\n${learningMemory || "Ainda não há memória histórica suficiente."}`
     } as any);
 
     const parsed = parseJson(response.output_text);

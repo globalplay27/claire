@@ -6,6 +6,7 @@ import { auditOwnInstagramContent } from "./instagram-insights.js";
 import {
   createJob,
   getPublishableJobs,
+  getRecentLearningMemory,
   hasJobForLocalSlot,
   markFailed,
   markPublished,
@@ -37,8 +38,9 @@ async function createFreshPost(label: string) {
 
   let jobId: string | null = null;
   try {
+    const learningMemory = await getRecentLearningMemory();
     const [research, audit] = await Promise.all([
-      viralResearchAgent(),
+      viralResearchAgent(learningMemory),
       auditOwnInstagramContent()
     ]);
 
@@ -112,8 +114,9 @@ export async function runAutomationCycle() {
     if (slotHour !== undefined && !(await hasJobForLocalSlot(dayKey, slotHour))) {
       let jobId: string | null = null;
       try {
+        const learningMemory = await getRecentLearningMemory();
         const [research, audit] = await Promise.all([
-          viralResearchAgent(),
+          viralResearchAgent(learningMemory),
           auditOwnInstagramContent()
         ]);
 
