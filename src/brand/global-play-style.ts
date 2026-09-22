@@ -94,3 +94,57 @@ export const GLOBAL_PLAY_DEFAULT_HASHTAGS = [
 
 export const GLOBAL_PLAY_SITE_CTA = "Conheça os planos em globalplay.fun";
 export const GLOBAL_PLAY_COMMENT_CTA = 'Digite "QUERO" nos comentários para saber mais.';
+
+const RESELLER_CAMPAIGN_ANCHOR_DAY = "2026-09-22";
+
+function saoPauloDayKey(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+export function isResellerCampaignDay(date = new Date()) {
+  const current = Date.parse(`${saoPauloDayKey(date)}T00:00:00Z`);
+  const anchor = Date.parse(`${RESELLER_CAMPAIGN_ANCHOR_DAY}T00:00:00Z`);
+  const elapsedDays = Math.floor((current - anchor) / 86_400_000);
+  return ((elapsedDays % 2) + 2) % 2 === 0;
+}
+
+export function isCustomerCampaignDay(date = new Date()) {
+  return !isResellerCampaignDay(date);
+}
+
+export const RESELLER_CAMPAIGN_BRIEF = `
+REGRA OBRIGATORIA PARA O DIA DE REVENDEDORES
+- Produza somente propaganda para REVENDEDORES da Global Play.
+- Divulgue a tabela completa, sem omitir nenhum plano:
+  • ADM — R$ 599,99: abre painel ULTRA e tem creditos infinitos.
+  • ULTRA — R$ 199,00: cria painel MASTER e tem creditos infinitos.
+  • MASTER — R$ 44,99: cria revenda, com minimo de 10 creditos.
+- Trabalhe a dor de fornecedor instavel, suporte que some, travamentos e clientes cobrando.
+- Apresente estabilidade, suporte e oportunidade comercial, sem prometer lucro garantido.
+- Nao divulgue planos de cliente final neste dia.
+`;
+
+export const RESELLER_PRICE_BLOCK = `PAINEL ADM — R$ 599,99 — abre painel ULTRA e tem créditos infinitos.
+PAINEL ULTRA — R$ 199,00 — cria painel MASTER e tem créditos infinitos.
+PAINEL MASTER — R$ 44,99 — cria revenda, mínimo de 10 créditos.`;
+
+export const CUSTOMER_CAMPAIGN_BRIEF = `
+REGRA OBRIGATORIA PARA O DIA DE CLIENTE FINAL
+- Produza somente propaganda para CLIENTES FINAIS da Global Play.
+- Divulgue a tabela completa, sem omitir nenhum plano:
+  • 1 MES — R$ 29,99.
+  • 2 MESES — R$ 49,99.
+  • 3 MESES — R$ 69,99.
+- Trabalhe as dores de travamentos em jogos, filmes e series, delay, pouco conteudo e suporte que nao responde.
+- Apresente estabilidade, variedade de conteudo e suporte, sem prometer zero travamentos.
+- Nao divulgue paineis de revenda neste dia.
+`;
+
+export const CUSTOMER_PRICE_BLOCK = `1 MÊS — R$ 29,99.
+2 MESES — R$ 49,99.
+3 MESES — R$ 69,99.`;
