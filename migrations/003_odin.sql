@@ -1,0 +1,20 @@
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS brand TEXT NOT NULL DEFAULT 'global_play';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS intent TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS score INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS source_media_id TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_contact_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS converted_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS odin_events (
+  event_id TEXT PRIMARY KEY,
+  brand TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_leads_odin_queue
+  ON leads(temperature, stage, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_leads_brand_updated
+  ON leads(brand, updated_at DESC);
