@@ -7,6 +7,8 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().default("gpt-5.6-luna"),
   OPENAI_IMAGE_MODEL: z.string().default("gpt-image-1"),
+  NEXUS_AGENT_TOKEN: z.string().min(16).optional(),
+  NEXUS_POST_EVENT_URL: z.string().url().optional(),
   META_APP_SECRET: z.string().min(1).optional(),
   INSTAGRAM_APP_SECRET: z.string().min(1).optional(),
   META_VERIFY_TOKEN: z.string().min(8),
