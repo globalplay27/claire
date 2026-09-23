@@ -51,11 +51,11 @@ async function sendEvent(payload: Record<string, unknown>) {
   }
 }
 
-export function beginPostTracking(postId: string, scheduledFor: Date) {
+export function beginPostTracking(postId: string, scheduledFor: Date, scheduledHour?: string) {
   current = {
     postId,
     scheduledFor: scheduledFor.toISOString(),
-    scheduledHour: saoPauloHour(scheduledFor)
+    scheduledHour: scheduledHour || saoPauloHour(scheduledFor)
   };
   void sendEvent({ ...current, status: "generating" });
 }
