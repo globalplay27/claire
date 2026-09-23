@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { env } from "../config/env.js";
 import { GLOBAL_PLAY_CREATIVE_DNA } from "../brand/global-play-style.js";
+import { addTextUsageCost } from "./nexus-ledger.js";
 
 const client = env.OPENAI_API_KEY ? new OpenAI({ apiKey: env.OPENAI_API_KEY }) : null;
 
@@ -69,6 +70,10 @@ Retorne SOMENTE JSON válido:
       input: `Pesquise agora o que está chamando atenção neste nicho e transforme em aprendizado para o próximo criativo da Global Play.\n\nMEMÓRIA DE PESQUISAS E RESULTADOS ANTERIORES:\n${learningMemory || "Ainda não há memória histórica suficiente."}`
     } as any);
 
+    const webCalls = Array.isArray((response as any).output)
+      ? (response as any).output.filter((item: any) => item?.type === "web_search_call").length
+      : 0;
+    addTextUsageCost((response as any).usage, env.OPENAI_MODEL, webCalls * 0.01, webCalls ? "openai_usage_plus_web_search" : "openai_usage");
     const parsed = parseJson(response.output_text);
     return {
       signals: Array.isArray(parsed.signals) ? parsed.signals.slice(0, 8).map(String) : [],
