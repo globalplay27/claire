@@ -1,7 +1,7 @@
 import { env } from "../config/env.js";
 import { detectLeadKeyword } from "../leads/keywords.js";
 import { classifyLead } from "../leads/scoring.js";
-import { claimEvent, findLeadByInstagramUserId, releaseEvent, saveMessage, updateLeadQualification, upsertLead } from "../leads/repository.js";
+import { claimEvent, findLeadByInstagramUserId, recentConversation, releaseEvent, saveMessage, setLeadStage, updateLeadQualification, upsertLead } from "../leads/repository.js";
 import { sendDirectMessage, sendDirectMessageWithContacts, sendPrivateReply } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
@@ -17,6 +17,72 @@ const isCustomer = (text: string) => /^(1|assinar|assinatura|cliente|quero usar)
 const isReseller = (text: string) => /^(2|revenda|revendedor|revender|quero vender)\b/.test(normalize(text));
 const isSupport = (text: string) => /^(3|suporte|ajuda|ja sou cliente)\b/.test(normalize(text));
 const numberIn = (text: string) => Number.parseInt(text.match(/\d+/)?.[0] ?? "1", 10);
+
+const AUTOMATION_MARKERS = [
+  "sou a assistente virtual",
+  "sou o assistente virtual",
+  "assistente virtual",
+  "atendimento automatico",
+  "atendimento automatizado",
+  "responda 1",
+  "responda 2",
+  "responda 3",
+  "digite 1",
+  "digite 2",
+  "escolha uma opcao",
+  "escolha uma das opcoes",
+  "selecione uma opcao",
+  "para eu te ajudar rapido",
+  "para continuar escolha",
+  "menu de atendimento",
+  "falar no whatsapp",
+  "acesse nosso site"
+];
+
+const loopText = (text: string) =>
+  normalize(text)
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\b\d{2,}\b/g, "#")
+    .replace(/[^a-z0-9# ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+function automationMarkerScore(text: string) {
+  const value = loopText(text);
+  return AUTOMATION_MARKERS.reduce((score, marker) => score + (value.includes(marker) ? 1 : 0), 0);
+}
+
+async function shouldSuppressAutomationLoop(leadId: string, inboundText: string) {
+  const history = await recentConversation(leadId, 16);
+  const now = Date.now();
+  const recent = history.filter(item => {
+    const at = new Date(item.created_at).getTime();
+    return Number.isFinite(at) && now - at <= 10 * 60 * 1000;
+  });
+  const normalizedInbound = loopText(inboundText);
+  const recentInbound = recent.filter(item => item.direction === "inbound");
+  const recentOutbound = recent.filter(item => item.direction === "outbound");
+  const sameInboundCount = recentInbound.filter(item => loopText(item.body) === normalizedInbound).length;
+  const markerScore = automationMarkerScore(inboundText);
+  const outboundBurst = recentOutbound.length;
+  const inboundBurst = recentInbound.length;
+
+  // Strong bot signature: menu-like automated copy after we have already replied.
+  if (markerScore >= 2 && outboundBurst >= 1) return "automation_signature";
+
+  // Same automated payload arriving again after our responses.
+  if (sameInboundCount >= 2 && outboundBurst >= 2) return "repeated_inbound";
+
+  // Circuit breaker for a fast ping-pong even when wording changes.
+  if (inboundBurst >= 5 && outboundBurst >= 5) return "rapid_ping_pong";
+
+  // Secondary guard: several bot-like turns in a short burst.
+  const automatedInbound = recentInbound.filter(item => automationMarkerScore(item.body) >= 1).length;
+  if (automatedInbound >= 3 && outboundBurst >= 3) return "automation_burst";
+
+  return "";
+}
+
 
 async function direct(leadId: string, recipient: string, body: string, contacts = false) {
   const sent = contacts
@@ -77,6 +143,15 @@ export async function processInstagramEvent(event: InstagramEvent) {
     }
     const lead = await findLeadByInstagramUserId(event.senderId) ?? await upsertLead({ instagramUserId: event.senderId, brand: env.BRAND_NAME, stage: "dm_started" });
     await saveMessage({ leadId: lead.id, direction: "inbound", body: event.text, metaMessageId: event.messageId });
+    const loopReason = await shouldSuppressAutomationLoop(lead.id, event.text);
+    if (loopReason) {
+      await setLeadStage(lead.id, "automation_suppressed");
+      console.warn("Instagram DM automation loop suppressed", {
+        leadId: lead.id,
+        reason: loopReason
+      });
+      return;
+    }
     return qualify(event.senderId, lead, event.text);
   } catch (error) {
     await releaseEvent(event.eventId).catch(() => undefined);
