@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { env } from "../config/env.js";
 import { CUSTOMER_CAMPAIGN_BRIEF, CUSTOMER_PRICE_BLOCK, GLOBAL_PLAY_COMMENT_CTA, GLOBAL_PLAY_CREATIVE_DNA, GLOBAL_PLAY_DEFAULT_HASHTAGS, isResellerCampaignDay, RESELLER_CAMPAIGN_BRIEF, RESELLER_PRICE_BLOCK } from "../brand/global-play-style.js";
 import { renderGlobalPlayCreative } from "./creative-renderer.js";
+import { addImageUsageCost, addTextUsageCost } from "./nexus-ledger.js";
 import type { ViralResearch } from "./viral-research.js";
 import type { AccountAudit } from "./instagram-insights.js";
 
@@ -53,6 +54,7 @@ ${campaignBrief}
 Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","format":"image"}.`,
     input: `PESQUISA VIRAL:\n${JSON.stringify(research)}\n\nAUDITORIA:\n${JSON.stringify(audit)}\n\nEscolha a próxima publicação.`
   } as any);
+  addTextUsageCost((response as any).usage, env.OPENAI_MODEL);
   const parsed = parseJson(response.output_text);
   if (isResellerCampaignDay()) {
     return {
@@ -86,6 +88,7 @@ ${campaignBrief}
 Responda JSON puro: {"caption":"...","hashtags":["#..."],"headline":"...","subheadline":"...","imagePrompt":"..."}.`,
     input: `Tema: ${topic}\nObjetivo: ${objective}\nSinais atuais: ${research.summary}\nGanchos: ${research.hookPatterns.join(" | ")}\nPadrões visuais: ${research.visualPatterns.join(" | ")}\nAuditoria: ${audit.summary}`
   } as any);
+  addTextUsageCost((response as any).usage, env.OPENAI_MODEL);
   const parsed = parseJson(response.output_text);
   const headline = (isResellerCampaignDay() ? "PAINÉIS PARA REVENDEDORES" : "PLANOS GLOBAL PLAY").slice(0, 60);
   const subheadline = (isResellerCampaignDay() ? "ADM R$ 599,99 • ULTRA R$ 199 • MASTER R$ 44,99" : "1 MÊS R$ 29,99 • 2 MESES R$ 49,99 • 3 MESES R$ 69,99").slice(0, 90);
@@ -118,7 +121,8 @@ Retorne apenas JSON: {"approved":true|false,"issues":["..."],"correction":"..."}
     }]
   } as any);
   try {
-    const parsed = parseJson(response.output_text);
+    addTextUsageCost((response as any).usage, env.OPENAI_MODEL);
+  const parsed = parseJson(response.output_text);
     return { approved: Boolean(parsed.approved), issues: Array.isArray(parsed.issues) ? parsed.issues.map(String) : [], correction: String(parsed.correction || "") };
   } catch {
     return { approved: false, issues: ["controle de qualidade não retornou JSON válido"], correction: "Aumente a legibilidade e simplifique a composição." };
@@ -138,6 +142,7 @@ export async function imageAgent(prompt: string, headline: string, subheadline: 
       quality: "high",
       output_format: "jpeg"
     });
+    addImageUsageCost(result?.usage, env.OPENAI_IMAGE_MODEL, "1024x1536", "high");
     const b64 = result?.data?.[0]?.b64_json;
     if (!b64) throw new Error("A geração de imagem não retornou bytes");
     const background = Buffer.from(b64, "base64");
