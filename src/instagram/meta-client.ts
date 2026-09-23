@@ -30,12 +30,12 @@ function contactButtonsMessage(text: string, siteUrl: string, whatsappUrl: strin
           {
             type: "web_url",
             url: whatsappUrl,
-            title: "Falar no WhatsApp"
+            title: "WhatsApp"
           },
           {
             type: "web_url",
             url: siteUrl,
-            title: "Acessar site"
+            title: "globalplay.fun"
           }
         ]
       }
@@ -89,7 +89,6 @@ export async function sendDirectMessageWithWebsite(instagramScopedUserId: string
     message: websiteButtonMessage(text, url)
   });
 }
-
 
 export async function sendPrivateReplyWithContacts(
   commentId: string,
