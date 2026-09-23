@@ -46,9 +46,11 @@ export async function plannerAgent(research: ViralResearch, audit: AccountAudit)
   const response = await ai.responses.create({
     model: env.OPENAI_MODEL,
     instructions: `Você é o estrategista do Instagram da ${env.BRAND_NAME}.
-Use pesquisa viral atual + dados da própria conta para escolher UMA ideia.
-Trabalhe uma dor real do cliente com gancho simples. Não copie; extraia mecanismo, formato e tensão.
-Não prometa zero travamentos nem invente resultados.
+Use pesquisa viral atual + dados da própria conta para escolher UMA ideia com maior potencial de atenção e intenção comercial.
+Priorize curiosidade, entretenimento, desejo, identificação positiva, compartilhamento e clareza. Não copie; extraia mecanismo, formato e tensão.
+Dor pode ser usada como contexto de copy, mas NUNCA transforme a criação em homem sofrendo, pessoa desesperada, rosto de raiva ou comparação triste x feliz.
+Varie os conceitos e não repita a mesma composição visual em publicações consecutivas.
+Não prometa viralização, zero travamentos nem invente resultados.
 ${GLOBAL_PLAY_CREATIVE_DNA}
 ${campaignBrief}
 Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","format":"image"}.`,
@@ -58,17 +60,17 @@ Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","
   const parsed = parseJson(response.output_text);
   if (isResellerCampaignDay()) {
     return {
-      topic: "Tabela completa de painéis para revendedores",
-      objective: "Apresentar ADM, ULTRA e MASTER com preços e benefícios confirmados",
-      pain: "fornecedor instável, suporte que some e clientes cobrando",
-      hook: "Seu fornecedor deixa você na mão?"
+      topic: String(parsed.topic || "Oportunidade profissional para revendedores"),
+      objective: String(parsed.objective || "Atrair revendedores com uma comunicação positiva, clara e comercial"),
+      pain: String(parsed.pain || "dificuldade de encontrar estrutura e suporte confiáveis"),
+      hook: String(parsed.hook || "Pronto para levar sua revenda a outro nível?")
     };
   }
   return {
-    topic: "Tabela completa de planos para clientes finais",
-    objective: "Apresentar os planos de 1, 2 e 3 meses com preços confirmados",
-    pain: "travamentos, delay, pouco conteúdo e suporte que não responde",
-    hook: "Cansado de pagar para esperar carregar?"
+    topic: String(parsed.topic || "Entretenimento que combina com o momento do cliente"),
+    objective: String(parsed.objective || "Gerar desejo, interação e visitas ao site com uma ideia de alto impacto visual"),
+    pain: String(parsed.pain || "experiência de entretenimento pouco prática ou limitada"),
+    hook: String(parsed.hook || "O que vai entrar na sua tela hoje?")
   };
 }
 
@@ -80,7 +82,9 @@ export async function creatorAgent(topic: string, objective: string, research: V
     instructions: `Você é o diretor criativo da Global Play (${env.BRAND_INSTAGRAM}).
 Crie legenda curta + headline + apoio + descrição de FUNDO VISUAL SEM TEXTO.
 Legenda: até 3 frases curtas, 5 a 8 hashtags, sem linguagem corporativa. A aplicação acrescentará obrigatoriamente o CTA para comentar QUERO; não peça palavra no Direct e não substitua esse CTA por outro.
-Arte: cinematográfica, realista, forte, brasileira, mostrando a dor em 2 segundos.
+Arte: cinematográfica, realista, forte, brasileira e feita para parar o scroll em 2 segundos.
+Priorize diversão, descoberta, emoção positiva, futebol, noite de cinema, maratona, família/amigos, movimento e desejo de assistir.
+PROIBIDO: homem sofrendo, pessoa triste/desesperada, rosto de raiva, casal brigando, split-screen "antes sofrendo / depois feliz" ou qualquer dramatização literal da dor.
 O imagePrompt deve pedir uma cena SEM QUALQUER TEXTO, LOGO, LETRA, NÚMERO OU INTERFACE LEGÍVEL. A aplicação vai sobrepor o texto depois.
 Não use logos de terceiros.
 ${GLOBAL_PLAY_CREATIVE_DNA}
@@ -90,9 +94,13 @@ Responda JSON puro: {"caption":"...","hashtags":["#..."],"headline":"...","subhe
   } as any);
   addTextUsageCost((response as any).usage, env.OPENAI_MODEL);
   const parsed = parseJson(response.output_text);
-  const headline = (isResellerCampaignDay() ? "PAINÉIS PARA REVENDEDORES" : "PLANOS GLOBAL PLAY").slice(0, 60);
-  const subheadline = (isResellerCampaignDay() ? "ADM R$ 599,99 • ULTRA R$ 199 • MASTER R$ 44,99" : "1 MÊS R$ 29,99 • 2 MESES R$ 49,99 • 3 MESES R$ 69,99").slice(0, 90);
-  const imagePrompt = `${String(parsed.imagePrompt || "Premium cinematic Brazilian entertainment ad scene.")}\nCreate ONLY the photographic/cinematic background. NO visible text, letters, words, logos, numbers, captions, UI labels, watermarks or readable signage anywhere. Leave clean dark negative space at the top and bottom for later text overlay. ${GLOBAL_PLAY_CREATIVE_DNA}`;
+  const headline = String(parsed.headline || (isResellerCampaignDay()
+    ? "SUA REVENDA PODE IR ALÉM"
+    : "DÊ PLAY NO SEU MOMENTO")).slice(0, 60);
+  const subheadline = String(parsed.subheadline || (isResellerCampaignDay()
+    ? "Estrutura, suporte e oportunidade para crescer"
+    : "Entretenimento para curtir do seu jeito")).slice(0, 90);
+  const imagePrompt = `${String(parsed.imagePrompt || "Premium cinematic Brazilian entertainment lifestyle scene.")}\nCreate ONLY the photographic/cinematic background. NO visible text, letters, words, logos, numbers, captions, UI labels, watermarks or readable signage anywhere. Make the scene upbeat, desirable, dynamic and instantly understandable on a phone. NEVER depict suffering, sadness, anger, despair or a before/after sad-versus-happy comparison. Leave clean dark negative space at the top and bottom for later text overlay. ${GLOBAL_PLAY_CREATIVE_DNA}`;
   return {
     caption: finalizeCaption(String(parsed.caption || topic), topic, parsed.hashtags),
     imagePrompt,
