@@ -75,6 +75,7 @@ async function createFreshPost(label: string) {
 
     const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
     const assetId = await saveAsset(job.id, image);
+    reportPostStatus("ready", { approvalStatus: "approved" });
     await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; source=${label}`);
 
     await markPublishing(job.id);
@@ -89,7 +90,7 @@ async function createFreshPost(label: string) {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (jobId) await markFailed(jobId, message).catch(() => undefined);
-    reportPostStatus("failed", { error: message });
+    reportPostStatus("failed", { error: message, approvalStatus: /reprovado|quality/i.test(message) ? "rejected" : "pending" });
     await recordRun("creator", "failed", `source=${label}; ${message}`).catch(() => undefined);
     console.error("Manual creative pipeline failed", message);
     throw error;
@@ -158,11 +159,12 @@ export async function runAutomationCycle() {
 
         const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
         const assetId = await saveAsset(job.id, image);
+        reportPostStatus("ready", { approvalStatus: "approved" });
         await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; slot=${slotHour}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (jobId) await markFailed(jobId, message).catch(() => undefined);
-        reportPostStatus("failed", { error: message });
+        reportPostStatus("failed", { error: message, approvalStatus: /reprovado|quality/i.test(message) ? "rejected" : "pending" });
         await recordRun("creator", "failed", message).catch(() => undefined);
         console.error("Creative pipeline failed", message);
       }
