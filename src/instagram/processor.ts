@@ -12,7 +12,7 @@ import {
 import { sendDirectMessageWithContacts, sendPrivateReplyWithContacts } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
-const CONTACT_MESSAGE = "Escolha onde prefere continuar:";
+const CONTACT_MESSAGE = "👇";
 
 async function sendContactButtonsToComment(commentId: string) {
   return sendPrivateReplyWithContacts(
