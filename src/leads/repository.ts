@@ -100,8 +100,8 @@ export async function saveMessage(input: {
 }
 
 export async function recentConversation(leadId: string, limit = 12) {
-  const result = await db.query<{ direction: "inbound" | "outbound"; body: string }>(
-    `SELECT direction, body FROM (
+  const result = await db.query<{ direction: "inbound" | "outbound"; body: string; created_at: string | Date }>(
+    `SELECT direction, body, created_at FROM (
        SELECT direction, body, created_at
        FROM lead_messages
        WHERE lead_id = $1
