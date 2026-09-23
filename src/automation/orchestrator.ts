@@ -3,6 +3,7 @@ import { creatorAgent, imageAgent, plannerAgent } from "./openai-agents.js";
 import { publishImagePost } from "./meta-publisher.js";
 import { viralResearchAgent } from "./viral-research.js";
 import { auditOwnInstagramContent } from "./instagram-insights.js";
+import { beginPostTracking, clearPostTracking, reportPostStatus, scheduledPostId } from "./nexus-ledger.js";
 import {
   createJob,
   getPublishableJobs,
@@ -37,6 +38,8 @@ async function createFreshPost(label: string) {
   if (!baseUrl) throw new Error("PUBLIC_BASE_URL/RAILWAY_PUBLIC_DOMAIN indisponível");
 
   let jobId: string | null = null;
+  const scheduledFor = new Date();
+  beginPostTracking(scheduledPostId(scheduledFor, "globalplay-streaming-manual"), scheduledFor);
   try {
     const learningMemory = await getRecentLearningMemory();
     const [research, audit] = await Promise.all([
@@ -63,7 +66,7 @@ async function createFreshPost(label: string) {
       agent: "planner",
       topic: plan.topic,
       objective: plan.objective,
-      scheduledFor: new Date()
+      scheduledFor
     });
     jobId = job.id;
 
@@ -75,18 +78,23 @@ async function createFreshPost(label: string) {
     await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; source=${label}`);
 
     await markPublishing(job.id);
+    reportPostStatus("publishing");
     const imageUrl = `${baseUrl}/automation/assets/${assetId}`;
     const mediaId = await publishImagePost(imageUrl, content.caption);
     await markPublished(job.id, mediaId);
+    reportPostStatus("published", { mediaId, publishedAt: new Date().toISOString() });
     await recordRun("publisher", "success", `job=${job.id}; media=${mediaId}; source=${label}`);
 
     return { jobId: job.id, assetId, mediaId };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (jobId) await markFailed(jobId, message).catch(() => undefined);
+    reportPostStatus("failed", { error: message });
     await recordRun("creator", "failed", `source=${label}; ${message}`).catch(() => undefined);
     console.error("Manual creative pipeline failed", message);
     throw error;
+  } finally {
+    clearPostTracking();
   }
 }
 
@@ -96,6 +104,7 @@ export async function runAutomationNow() {
   try {
     return await createFreshPost("manual-now");
   } finally {
+    clearPostTracking();
     busy = false;
   }
 }
@@ -113,6 +122,9 @@ export async function runAutomationCycle() {
 
     if (slotHour !== undefined && !(await hasJobForLocalSlot(dayKey, slotHour))) {
       let jobId: string | null = null;
+      const scheduledFor = new Date();
+      const scheduledHour = String(slotHour).padStart(2, "0") + ":00";
+      beginPostTracking(scheduledPostId(scheduledFor), scheduledFor, scheduledHour);
       try {
         const learningMemory = await getRecentLearningMemory();
         const [research, audit] = await Promise.all([
@@ -137,7 +149,7 @@ export async function runAutomationCycle() {
           agent: "planner",
           topic: plan.topic,
           objective: plan.objective,
-          scheduledFor: new Date()
+          scheduledFor
         });
         jobId = job.id;
 
@@ -150,14 +162,21 @@ export async function runAutomationCycle() {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (jobId) await markFailed(jobId, message).catch(() => undefined);
+        reportPostStatus("failed", { error: message });
         await recordRun("creator", "failed", message).catch(() => undefined);
         console.error("Creative pipeline failed", message);
       }
     }
 
     for (const job of await getPublishableJobs()) {
+      const trackedFor = job.scheduledFor || new Date();
+      const trackedHour = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo", hour: "2-digit", hour12: false
+      }).format(trackedFor) + ":00";
+      beginPostTracking(scheduledPostId(trackedFor), trackedFor, trackedHour);
       try {
         await markPublishing(job.id);
+        reportPostStatus("publishing");
         const asset = await (await import("./repository.js")).getJob(job.id);
         if (!asset) throw new Error("Job não encontrado");
         const raw = await (await import("../database/db.js")).db.query(
@@ -169,11 +188,15 @@ export async function runAutomationCycle() {
         const imageUrl = `${baseUrl}/automation/assets/${assetId}`;
         const mediaId = await publishImagePost(imageUrl, job.caption ?? job.topic);
         await markPublished(job.id, mediaId);
+        reportPostStatus("published", { mediaId, publishedAt: new Date().toISOString() });
         await recordRun("publisher", "success", `job=${job.id}; media=${mediaId}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         await markFailed(job.id, message);
+        reportPostStatus("failed", { error: message });
         await recordRun("publisher", "failed", message);
+      } finally {
+        clearPostTracking();
       }
     }
   } catch (error) {
