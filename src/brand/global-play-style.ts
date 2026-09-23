@@ -5,24 +5,34 @@ SITE: https://globalplay.fun
 WHATSAPP: (21) 96481-6185
 
 OBJETIVO
-- Criar conteúdo que faça o público se identificar com uma dor real, entender a solução em segundos e visitar o site.
-- Crescer visualizações, seguidores e clientes sem prometer viralização nem inventar resultados.
+- Criar conteúdo que pare o scroll, gere curiosidade e faça o público desejar a experiência Global Play.
+- Aumentar alcance, comentários, compartilhamentos, visitas ao site e oportunidades comerciais sem prometer viralização nem inventar resultados.
+- Vender entretenimento e conveniência com comunicação simples, positiva, atual e altamente visual.
 
-DORES CENTRAIS — TODO CRIATIVO DE CONVERSÃO DEVE PARTIR DE UMA DELAS
-1. Aplicativo/streaming travando justamente em dia de jogo ou na hora do gol.
-2. Delay alto e receber spoiler do gol antes da imagem chegar.
-3. Suporte que não responde quando o cliente precisa.
-4. Filme ou série travando na melhor parte.
-5. Pouco conteúdo e sensação de pagar por algo que não entrega variedade.
-6. Para revendedores: fornecedor instável, suporte que some e cliente cobrando.
+DIREÇÃO ESTRATÉGICA — VISIBILIDADE PRIMEIRO
+1. Antes de criar, usar pesquisa atual + desempenho da própria conta para escolher o melhor gancho, formato e tema.
+2. Priorizar emoção positiva, descoberta, diversão, futebol, noite de cinema, maratona, família/amigos e liberdade de assistir.
+3. Dor pode existir como CONTEXTO de copy, mas nunca como estética principal.
+4. É PROIBIDO transformar a dor em cena literal de sofrimento: homem triste, pessoa desesperada, rosto de raiva, casal brigando ou comparação "sofrendo x feliz".
+5. Evitar repetir o mesmo conceito visual em dias consecutivos; variar cenário, enquadramento e mecanismo de atenção.
+6. Cada criativo deve ter UM elemento que prenda atenção em até 2 segundos: ação, expressão de surpresa positiva, luz, movimento, futebol, tela cinematográfica ou composição inesperada.
 
-GANCHOS PREFERIDOS — CURTOS E POPULARES
-- "Vai travar justo na hora do gol?"
-- "Cansado de chamar o suporte e ninguém responder?"
-- "Filme travando na melhor parte?"
-- "Seu streaming te deixa na mão quando você mais precisa?"
-- "Chega de passar raiva na frente da TV."
-- "Você paga pra assistir ou pra esperar carregar?"
+PILARES DE CONTEÚDO
+- Entretenimento aspiracional: clima de cinema, maratona, sofá premium, família/amigos e momentos de diversão.
+- Esporte e emoção: expectativa do jogo, comemoração, torcida e tensão positiva do lance.
+- Descoberta: "o que assistir hoje?", novidades de gêneros e escolha de conteúdo sem usar marcas de terceiros.
+- Conveniência: assistir em TV, celular, tablet ou notebook com cenas naturais.
+- Oferta: planos e CTA claros, sem transformar todo post em tabela.
+- Revenda: oportunidade, estrutura, autonomia e suporte; nunca mostrar fracasso ou desespero.
+
+GANCHOS PREFERIDOS — CURTOS, POSITIVOS E CURIOSOS
+- "Seu sofá virou cinema."
+- "Hoje tem jogo. Sua tela está pronta?"
+- "Escolher o que assistir ficou mais divertido."
+- "Dê play no seu momento."
+- "Filme, série ou futebol: qual vai ser hoje?"
+- "Uma noite comum pode virar sessão especial."
+- "Seu entretenimento merece mais possibilidades."
 
 IDENTIDADE VISUAL OBRIGATÓRIA
 - Estética brasileira de anúncio premium, forte, comercial e cinematográfica.
@@ -30,7 +40,7 @@ IDENTIDADE VISUAL OBRIGATÓRIA
 - Azul elétrico, vermelho, prata/cromado, preto e branco.
 - Contraste alto, luz cinematográfica, neon controlado e profundidade.
 - Títulos grandes, 3D/alto-relevo, muito legíveis no celular.
-- Pessoas reais, sala de TV, estádio, TV grande e situações que mostrem a dor.
+- Pessoas reais ou cenas de entretenimento marcantes, sala de TV, estádio, TV grande, celular e momentos de diversão/descoberta.
 - Layout em blocos claros; impactante sem virar bagunça.
 - NÃO fazer arte minimalista genérica, cards corporativos ou muito espaço vazio.
 - NÃO usar inglês visível.
@@ -47,21 +57,21 @@ PADRÃO DE TEXTO DA ARTE
 - Nome da marca visível: "GLOBAL PLAY".
 
 CLIENTE FINAL
-- Trabalhar primeiro a dor: travamento, delay, suporte ou conteúdo.
-- Depois mostrar solução visual: tranquilidade, entretenimento, TV/filmes/séries.
+- Trabalhar primeiro desejo, entretenimento, descoberta, conveniência e emoção.
+- Dor pode aparecer em uma frase curta de contexto, mas nunca como personagem sofrendo ou comparação triste/feliz.
 - Quando usar preço, usar apenas valores confirmados:
   • 1 MÊS — R$ 29,99
   • 2 MESES — R$ 49,99
   • 3 MESES — R$ 69,99
 
 REVENDEDOR
-- Dor: instabilidade, fornecedor que some, suporte ruim, cliente cobrando.
-- Solução: estabilidade, suporte e oportunidade comercial.
+- Mostrar oportunidade comercial, estrutura, autonomia, suporte e profissionalismo.
+- Problemas do mercado podem aparecer na copy, sem cenas de fracasso, desespero ou clientes irritados.
 - Nunca prometer lucro garantido.
 
 ESPORTES
 - Estádio/TV com jogo genérico, sem escudos nem marcas quando não houver dados confirmados.
-- Explorar a tensão de "travar na hora do gol" e "spoiler do vizinho".
+- Explorar expectativa, emoção, comemoração e energia de acompanhar o jogo; problemas técnicos podem ser citados apenas como contraste verbal.
 - Painel limpo, título forte e leitura instantânea.
 
 LEGENDA
