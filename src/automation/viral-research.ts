@@ -17,31 +17,31 @@ export type ViralResearch = {
 function fallbackResearch(): ViralResearch {
   return {
     signals: [
-      "Travamento e buffering em transmissões ao vivo geram frustração imediata.",
-      "Delay em futebol cria o efeito de receber spoiler do gol antes da TV.",
-      "Suporte que demora a responder aumenta a sensação de abandono.",
-      "Conteúdo de dor cotidiana funciona melhor quando a situação é reconhecida em segundos."
+      "Conteúdo de entretenimento precisa ser entendido visualmente antes de a pessoa ler a legenda.",
+      "Momentos de futebol, cinema em casa, maratona e escolha do que assistir oferecem identificação rápida.",
+      "Curiosidade, movimento e emoção positiva tendem a criar uma primeira impressão mais compartilhável do que dramatização de sofrimento.",
+      "Alternar formatos e cenários evita fadiga visual e ajuda a descobrir o que a própria audiência responde melhor."
     ],
     hookPatterns: [
-      "Pergunta curta que descreve a dor.",
-      "Cena de tensão antes do momento decisivo.",
-      "Contraste entre passar raiva e assistir tranquilo.",
-      "Humor de identificação sem prometer desempenho."
+      "Pergunta curta de escolha ou curiosidade.",
+      "Momento de expectativa antes de jogo, filme ou maratona.",
+      "Cena aspiracional com uma transformação do ambiente em experiência de entretenimento.",
+      "Humor leve, surpresa ou identificação positiva sem prometer desempenho."
     ],
     visualPatterns: [
-      "Pessoa reagindo à TV travada em jogo decisivo.",
-      "Tela carregando no momento do gol.",
-      "Família frustrada e depois relaxada diante da TV.",
-      "Headline grande, poucos elementos e CTA forte."
+      "Sala cinematográfica com pessoas animadas diante da TV.",
+      "Torcida ou amigos em clima de jogo, sem marcas de terceiros.",
+      "Pessoa escolhendo conteúdo entre TV e celular em ambiente premium.",
+      "Composição de alto contraste com ação clara, poucos elementos e CTA forte."
     ],
     angles: [
-      "Vai travar justo na hora do gol?",
-      "Filme travando na melhor parte?",
-      "Suporte sumiu quando você precisou?",
-      "Você paga pra assistir ou pra esperar carregar?"
+      "Hoje tem jogo. Sua tela está pronta?",
+      "Seu sofá virou cinema.",
+      "Filme, série ou futebol: qual vai ser hoje?",
+      "Dê play no seu momento."
     ],
-    avoid: ["promessa de zero travamento", "cópia de criativo alheio", "inglês visível", "texto longo"],
-    summary: "Priorize identificação imediata com travamento, delay, suporte e conteúdo; use pergunta curta, cena emocional e CTA simples."
+    avoid: ["homem sofrendo", "pessoa triste ou desesperada", "antes triste e depois feliz", "promessa de zero travamento", "cópia de criativo alheio", "inglês visível", "texto longo"],
+    summary: "Priorize desejo, entretenimento, curiosidade e emoção positiva; use a dor apenas como contexto verbal quando realmente ajudar o gancho."
   };
 }
 
@@ -58,10 +58,11 @@ export async function viralResearchAgent(learningMemory = ""): Promise<ViralRese
       model: env.OPENAI_MODEL,
       tools: [{ type: "web_search" } as any],
       instructions: `Você executa o modo /ig-viral para a Global Play.
-Pesquise sinais ATUAIS dos últimos 30 dias no Brasil sobre streaming, TV, filmes, séries, futebol ao vivo, buffering/travamento, delay, experiência de suporte e descoberta de conteúdo.
+Pesquise sinais ATUAIS dos últimos 30 dias no Brasil sobre entretenimento, streaming, TV, filmes, séries, futebol ao vivo, descoberta de conteúdo e comportamento de audiência.
 Use somente conteúdo público. Extraia MECANISMOS, não copie posts, slogans ou criativos.
 Não invente métricas. Não trate muita visualização isolada como prova de fórmula.
-Busque principalmente: dor recorrente, tipo de gancho, formato, mecanismo de retenção, humor/identificação, elementos compartilháveis e comentários.
+Busque principalmente: ganchos que param o scroll, curiosidade, emoção positiva, formatos visuais, retenção, humor/identificação, elementos compartilháveis, comentários e sinais da própria audiência.
+Problemas como travamento, delay e suporte podem entrar apenas como contexto quando forem relevantes; NÃO recomende cenas de sofrimento, desespero, raiva ou comparação triste x feliz.
 Não recomende pirataria nem links ilegais.
 Compare os sinais atuais com a memória histórica fornecida. Preserve padrões que continuam fortes, descarte padrões fracos e proponha pelo menos um teste novo. Não confunda correlação com garantia de viralização.
 ${GLOBAL_PLAY_CREATIVE_DNA}
