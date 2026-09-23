@@ -134,8 +134,26 @@ export async function processInstagramEvent(event: InstagramEvent) {
   try {
     if (event.kind === "comment") {
       const keyword = detectLeadKeyword(event.text);
+      const existing = await findLeadByInstagramUserId(event.userId);
+      const lead = existing ?? await upsertLead({
+        instagramUserId: event.userId,
+        instagramUsername: event.username,
+        triggerKeyword: keyword ?? undefined,
+        campaign: event.mediaId,
+        sourceMediaId: event.mediaId,
+        brand: env.BRAND_NAME,
+        stage: keyword ? "choose_interest" : "commented"
+      });
+      const classification = classifyLead(event.text);
+      await updateLeadQualification({
+        leadId: lead.id,
+        scoreDelta: keyword ? 12 : 2,
+        temperature: keyword ? "warm" : classification.temperature,
+        needsHuman: classification.needsHuman
+      });
+      await saveMessage({ leadId: lead.id, direction: "inbound", body: event.text });
       if (!keyword) return;
-      const lead = await upsertLead({ instagramUserId: event.userId, instagramUsername: event.username, triggerKeyword: keyword, campaign: event.mediaId, sourceMediaId: event.mediaId, brand: env.BRAND_NAME, stage: "choose_interest" });
+
       const reply = menu(keyword);
       const sent = await sendPrivateReply(event.commentId, reply);
       await saveMessage({ leadId: lead.id, direction: "outbound", body: reply, metaMessageId: sent?.message_id });
