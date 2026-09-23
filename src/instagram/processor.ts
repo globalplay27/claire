@@ -1,7 +1,7 @@
 import { env } from "../config/env.js";
 import { detectLeadKeyword } from "../leads/keywords.js";
 import { classifyLead } from "../leads/scoring.js";
-import { claimEvent, findLeadByInstagramUserId, recentConversation, releaseEvent, saveMessage, setLeadStage, updateLeadQualification, upsertLead } from "../leads/repository.js";
+import { claimEvent, findLeadByInstagramUserId, recentConversation, releaseEvent, saveMessage, updateLeadQualification, upsertLead } from "../leads/repository.js";
 import { sendDirectMessage, sendDirectMessageWithContacts, sendPrivateReply } from "./meta-client.js";
 import type { InstagramEvent } from "./events.js";
 
@@ -145,7 +145,6 @@ export async function processInstagramEvent(event: InstagramEvent) {
     await saveMessage({ leadId: lead.id, direction: "inbound", body: event.text, metaMessageId: event.messageId });
     const loopReason = await shouldSuppressAutomationLoop(lead.id, event.text);
     if (loopReason) {
-      await setLeadStage(lead.id, "automation_suppressed");
       console.warn("Instagram DM automation loop suppressed", {
         leadId: lead.id,
         reason: loopReason
