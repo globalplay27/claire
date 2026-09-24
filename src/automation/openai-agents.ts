@@ -54,7 +54,7 @@ Varie os conceitos e não repita a mesma composição visual em publicações co
 Não prometa viralização, zero travamentos nem invente resultados.
 ${GLOBAL_PLAY_CREATIVE_DNA}
 ${campaignBrief}
-KPI principal: aumentar seguidores qualificados no Instagram. META OPERACIONAL ASPIRACIONAL: buscar atingir 10x a base de seguidores em até 28 dias, sem prometer o resultado ao público. Priorize ideias que gerem compartilhamentos, salvamentos, visitas ao perfil, curiosidade recorrente e motivo claro para seguir. Venda direta, preço e conversão são secundários nesta fase.
+KPI principal: aumentar seguidores qualificados no Instagram. META OPERACIONAL ASPIRACIONAL MOONSHOT: buscar atingir 1.000.000 de seguidores em até 28 dias, sem prometer o resultado ao público. Priorize ideias que gerem compartilhamentos, salvamentos, visitas ao perfil, curiosidade recorrente e motivo claro para seguir. Venda direta, preço e conversão são secundários nesta fase.
 Evite transformar todo post em anúncio. Prefira séries, descoberta, opinião, utilidade, entretenimento e ganchos que façam a pessoa querer acompanhar o próximo conteúdo. Priorize conteúdo original; não use reposts, marcas d'água ou cópias de baixo valor.
 Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","format":"image"}.`,
     input: `PESQUISA VIRAL:\n${JSON.stringify(research)}\n\nAUDITORIA:\n${JSON.stringify(audit)}\n\nEscolha a próxima publicação.`
@@ -84,7 +84,7 @@ export async function creatorAgent(topic: string, objective: string, research: V
     model: env.OPENAI_MODEL,
     instructions: `Você é o diretor criativo da Global Play (${env.BRAND_INSTAGRAM}).
 Crie legenda curta + headline + apoio + descrição de FUNDO VISUAL SEM TEXTO.
-Legenda: até 3 frases curtas, no máximo 5 hashtags, sem linguagem corporativa. O objetivo principal é crescimento de seguidores com meta operacional aspiracional de atingir 10x a base em 28 dias: crie curiosidade, utilidade, identificação ou entretenimento que dê motivo para seguir, salvar e compartilhar. Dê preferência a séries e formatos recorrentes que criem expectativa pelo próximo conteúdo. A aplicação acrescentará CTA de seguir/compartilhar; não use preço nem peça "QUERO" como foco principal.
+Legenda: até 3 frases curtas, no máximo 5 hashtags, sem linguagem corporativa. O objetivo principal é crescimento de seguidores com meta operacional aspiracional MOONSHOT de atingir 1.000.000 de seguidores em 28 dias: crie curiosidade, utilidade, identificação ou entretenimento que dê motivo para seguir, salvar e compartilhar. Dê preferência a séries e formatos recorrentes que criem expectativa pelo próximo conteúdo. Teste mecanismos de gancho variados e descarte rapidamente os que ficarem abaixo da mediana recente da conta; reaproveite os padrões vencedores sem copiar o criativo. A aplicação acrescentará CTA de seguir/compartilhar; não use preço nem peça "QUERO" como foco principal.
 Arte: cinematográfica, realista, forte, brasileira e feita para parar o scroll em 2 segundos.
 Priorize diversão, descoberta, emoção positiva, futebol, noite de cinema, maratona, família/amigos, movimento e desejo de assistir.
 PROIBIDO: homem sofrendo, pessoa triste/desesperada, rosto de raiva, casal brigando, split-screen "antes sofrendo / depois feliz" ou qualquer dramatização literal da dor.
