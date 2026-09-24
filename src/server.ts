@@ -9,6 +9,105 @@ import { getInstagramInsightSnapshot } from "./automation/instagram-insights.js"
 
 const app = express();
 
+function nexusAuthorized(req: express.Request) {
+  const expected = String(env.NEXUS_AGENT_TOKEN || "");
+  const auth = String(req.headers.authorization || "");
+  return Boolean(expected && auth === "Bearer " + expected);
+}
+
+async function openAIJson(pathname: string, payload: unknown, timeoutMs = 180000) {
+  if (!env.OPENAI_API_KEY) throw new Error("openai_not_configured");
+  const response = await fetch("https://api.openai.com/v1/" + pathname.replace(/^\/+/, ""), {
+    method: "POST",
+    headers: {
+      authorization: "Bearer " + env.OPENAI_API_KEY,
+      "content-type": "application/json",
+      accept: "application/json",
+      "user-agent": "Claire-NEXUS-Bridge/1.0"
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(timeoutMs)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error("openai_http_" + response.status + ":" + JSON.stringify(data).slice(0, 900));
+  }
+  return data;
+}
+
+app.post("/nexus/openai/responses", express.json({ limit: "512kb" }), async (req, res) => {
+  if (!nexusAuthorized(req)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  try {
+    const body = req.body && typeof req.body === "object" ? req.body as Record<string, unknown> : {};
+    const allowed: Record<string, unknown> = {
+      model: env.OPENAI_MODEL || "gpt-5.6-luna",
+      input: body.input ?? "",
+      max_output_tokens: Math.min(6000, Math.max(64, Number(body.max_output_tokens || 1200)))
+    };
+    if (body.instructions) allowed.instructions = String(body.instructions).slice(0, 16000);
+    if (Array.isArray(body.tools)) allowed.tools = body.tools.slice(0, 8);
+    if (body.text && typeof body.text === "object") allowed.text = body.text;
+    const result = await openAIJson("responses", allowed, 180000);
+    res.json(result);
+  } catch (error) {
+    console.error("NEXUS OpenAI responses bridge failed", error);
+    res.status(502).json({
+      error: "openai_bridge_failed",
+      detail: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500)
+    });
+  }
+});
+
+app.post("/nexus/openai/transcriptions", express.json({ limit: "38mb" }), async (req, res) => {
+  if (!nexusAuthorized(req)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  try {
+    if (!env.OPENAI_API_KEY) throw new Error("openai_not_configured");
+    const encoded = String(req.body?.audio_base64 || "");
+    if (!encoded) {
+      res.status(400).json({ error: "audio_required" });
+      return;
+    }
+    const audio = Buffer.from(encoded, "base64");
+    if (!audio.length || audio.length > 25 * 1024 * 1024) {
+      res.status(413).json({ error: "audio_too_large" });
+      return;
+    }
+
+    const form = new FormData();
+    form.append("file", new Blob([audio], { type: "audio/mpeg" }), String(req.body?.filename || "audio.mp3").slice(0, 120));
+    form.append("model", "whisper-1");
+    form.append("response_format", "verbose_json");
+    form.append("timestamp_granularities[]", "segment");
+
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer " + env.OPENAI_API_KEY,
+        "user-agent": "Claire-NEXUS-Bridge/1.0"
+      },
+      body: form,
+      signal: AbortSignal.timeout(10 * 60 * 1000)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error("openai_transcription_http_" + response.status + ":" + JSON.stringify(data).slice(0, 900));
+    }
+    res.json(data);
+  } catch (error) {
+    console.error("NEXUS OpenAI transcription bridge failed", error);
+    res.status(502).json({
+      error: "openai_bridge_failed",
+      detail: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500)
+    });
+  }
+});
+
 app.use(express.json({
   limit: "1mb",
   verify: (req, _res, buf) => {
