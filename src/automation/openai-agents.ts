@@ -28,21 +28,33 @@ function cleanHashtags(value: unknown, topic: string) {
   return [...new Set([...fromModel, ...topicTags, ...GLOBAL_PLAY_DEFAULT_HASHTAGS])].slice(0, 8);
 }
 
-function finalizeCaption(rawCaption: string, topic: string, hashtags: unknown) {
+function finalizeCaption(rawCaption: string, topic: string, hashtags: unknown, mode: ContentMode = "growth") {
   const bodyLines = rawCaption.split("\n")
     .filter((line) => !line.trim().startsWith("#"))
     .join(" ")
     .replace(/Digite\s+["“”']?QUERO["“”']?[^.!?]*(?:[.!?]|$)/gi, "")
+    .replace(/Comente\s+["“”']?QUERO["“”']?[^.!?]*(?:[.!?]|$)/gi, "")
     .trim();
   const sentences = bodyLines.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, 3);
   const body = sentences.join(" ").trim();
-  const prices = `\n\n${isResellerCampaignDay() ? RESELLER_PRICE_BLOCK : CUSTOMER_PRICE_BLOCK}`;
-  return `${body}${prices}${body || prices ? "\n\n" : ""}${GLOBAL_PLAY_COMMENT_CTA}\n\n${cleanHashtags(hashtags, topic).join(" ")}`;
+
+  const secondaryGrowthCta = topic.length % 2 === 0
+    ? "Salve este post para lembrar depois."
+    : "Compartilhe com alguém que curte esse tipo de conteúdo.";
+
+  if (mode === "conversion") {
+    const prices = isResellerCampaignDay() ? RESELLER_PRICE_BLOCK : CUSTOMER_PRICE_BLOCK;
+    const salesCta = 'Comente "QUERO" se quiser receber as opções.';
+    return `${body}${body ? "\n\n" : ""}${prices}\n\n${salesCta}\n\n${cleanHashtags(hashtags, topic).join(" ")}`;
+  }
+
+  return `${body}${body ? "\n\n" : ""}${GLOBAL_PLAY_COMMENT_CTA} ${secondaryGrowthCta}\n\n${cleanHashtags(hashtags, topic).join(" ")}`;
 }
 
-export async function plannerAgent(research: ViralResearch, audit: AccountAudit) {
+export async function plannerAgent(research: ViralResearch, audit: AccountAudit, mode: ContentMode = "growth") {
   const ai = requireClient();
   const campaignBrief = isResellerCampaignDay() ? RESELLER_CAMPAIGN_BRIEF : CUSTOMER_CAMPAIGN_BRIEF;
+  const currentMode = modeBrief(mode);
   const response = await ai.responses.create({
     model: env.OPENAI_MODEL,
     instructions: `Você é o estrategista do Instagram da ${env.BRAND_NAME}.
@@ -55,6 +67,7 @@ Não prometa viralização, zero travamentos nem invente resultados.
 ${GLOBAL_PLAY_CREATIVE_DNA}
 ${campaignBrief}
 KPI principal: aumentar seguidores qualificados no Instagram. META OPERACIONAL ASPIRACIONAL MOONSHOT: buscar atingir 1.000.000 de seguidores em até 28 dias, sem prometer o resultado ao público. Priorize ideias que gerem compartilhamentos, salvamentos, visitas ao perfil, curiosidade recorrente e motivo claro para seguir. Venda direta, preço e conversão são secundários nesta fase.
+MODO DESTA PUBLICAÇÃO: ${currentMode}
 Evite transformar todo post em anúncio. Prefira séries, descoberta, opinião, utilidade, entretenimento e ganchos que façam a pessoa querer acompanhar o próximo conteúdo. Priorize conteúdo original; não use reposts, marcas d'água ou cópias de baixo valor.
 Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","format":"image"}.`,
     input: `PESQUISA VIRAL:\n${JSON.stringify(research)}\n\nAUDITORIA:\n${JSON.stringify(audit)}\n\nEscolha a próxima publicação.`
@@ -77,14 +90,17 @@ Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","
   };
 }
 
-export async function creatorAgent(topic: string, objective: string, research: ViralResearch, audit: AccountAudit) {
+export async function creatorAgent(topic: string, objective: string, research: ViralResearch, audit: AccountAudit, mode: ContentMode = "growth") {
   const ai = requireClient();
   const campaignBrief = isResellerCampaignDay() ? RESELLER_CAMPAIGN_BRIEF : CUSTOMER_CAMPAIGN_BRIEF;
+  const currentMode = modeBrief(mode);
   const response = await ai.responses.create({
     model: env.OPENAI_MODEL,
     instructions: `Você é o diretor criativo da Global Play (${env.BRAND_INSTAGRAM}).
 Crie legenda curta + headline + apoio + descrição de FUNDO VISUAL SEM TEXTO.
-Legenda: até 3 frases curtas, no máximo 5 hashtags, sem linguagem corporativa. O objetivo principal é crescimento de seguidores com meta operacional aspiracional MOONSHOT de atingir 1.000.000 de seguidores em 28 dias: crie curiosidade, utilidade, identificação ou entretenimento que dê motivo para seguir, salvar e compartilhar. Dê preferência a séries e formatos recorrentes que criem expectativa pelo próximo conteúdo. Teste mecanismos de gancho variados e descarte rapidamente os que ficarem abaixo da mediana recente da conta; reaproveite os padrões vencedores sem copiar o criativo. A aplicação acrescentará CTA de seguir/compartilhar; não use preço nem peça "QUERO" como foco principal.
+Legenda: até 3 frases curtas, no máximo 5 hashtags, sem linguagem corporativa. O objetivo principal é crescimento de seguidores com meta operacional aspiracional MOONSHOT de atingir 1.000.000 de seguidores em 28 dias: crie curiosidade, utilidade, identificação ou entretenimento que dê motivo para seguir, salvar e compartilhar. Dê preferência a séries e formatos recorrentes que criem expectativa pelo próximo conteúdo. Teste mecanismos de gancho variados e descarte rapidamente os que ficarem abaixo da mediana recente da conta; reaproveite os padrões vencedores sem copiar o criativo. A aplicação acrescentará o CTA correto automaticamente.
+MODO DESTA PUBLICAÇÃO: ${currentMode}
+Se o modo for CRESCIMENTO, não inclua preço, tabela, oferta direta ou "QUERO". Se for CONVERSÃO, mantenha a copy curta e deixe a aplicação acrescentar preços e CTA comercial.
 Arte: cinematográfica, realista, forte, brasileira e feita para parar o scroll em 2 segundos.
 Priorize diversão, descoberta, emoção positiva, futebol, noite de cinema, maratona, família/amigos, movimento e desejo de assistir.
 PROIBIDO: homem sofrendo, pessoa triste/desesperada, rosto de raiva, casal brigando, split-screen "antes sofrendo / depois feliz" ou qualquer dramatização literal da dor.
@@ -105,7 +121,7 @@ Responda JSON puro: {"caption":"...","hashtags":["#..."],"headline":"...","subhe
     : "Entretenimento para curtir do seu jeito")).slice(0, 90);
   const imagePrompt = `${String(parsed.imagePrompt || "Premium cinematic Brazilian entertainment lifestyle scene.")}\nCreate ONLY the photographic/cinematic background. NO visible text, letters, words, logos, numbers, captions, UI labels, watermarks or readable signage anywhere. Make the scene upbeat, desirable, dynamic and instantly understandable on a phone. NEVER depict suffering, sadness, anger, despair or a before/after sad-versus-happy comparison. Leave clean dark negative space at the top and bottom for later text overlay. ${GLOBAL_PLAY_CREATIVE_DNA}`;
   return {
-    caption: finalizeCaption(String(parsed.caption || topic), topic, parsed.hashtags),
+    caption: finalizeCaption(String(parsed.caption || topic), topic, parsed.hashtags, mode),
     imagePrompt,
     headline,
     subheadline
