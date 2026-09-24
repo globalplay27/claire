@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { db } from "../database/db.js";
 import type { AutomationAgent, ContentJob } from "./types.js";
 
+const FRESH_START_AT = new Date("2026-09-24T11:00:00.000Z");
+
 function rowToJob(row: any): ContentJob {
   return {
     id: row.id,
@@ -82,9 +84,10 @@ export async function getPublishableJobs(now = new Date()) {
      WHERE (j.status='ready' OR (j.status='failed' AND j.attempts < 3))
        AND j.asset_id IS NOT NULL
        AND j.scheduled_for <= $1
+       AND j.created_at >= $2
      ORDER BY j.scheduled_for ASC
      LIMIT 3`,
-    [now]
+    [now, FRESH_START_AT]
   );
   return result.rows.map(rowToJob);
 }
@@ -94,9 +97,10 @@ export async function hasJobForLocalSlot(dayKey: string, hour: number) {
     `SELECT 1 FROM automation_jobs
      WHERE to_char(scheduled_for AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD')=$1
        AND EXTRACT(HOUR FROM scheduled_for AT TIME ZONE 'America/Sao_Paulo')=$2
+       AND created_at >= $3
        AND NOT (status='failed' AND asset_id IS NULL)
      LIMIT 1`,
-    [dayKey, hour]
+    [dayKey, hour, FRESH_START_AT]
   );
   return (result.rowCount ?? 0) > 0;
 }
@@ -139,8 +143,9 @@ export async function getRecentLearningMemory(limit = 12) {
      WHERE status IN ('success','partial')
        AND agent IN ('researcher','auditor')
        AND detail IS NOT NULL
+       AND created_at >= $2
      ORDER BY created_at DESC LIMIT $1`,
-    [limit]
+    [limit, FRESH_START_AT]
   );
   return result.rows
     .map((row) => `${row.agent} ${new Date(row.created_at).toISOString()}: ${row.detail}`)
@@ -214,8 +219,9 @@ export async function countJobsForLocalDay(dayKey: string) {
   const result = await db.query<{ total: string }>(
     `SELECT COUNT(*)::text AS total FROM automation_jobs
      WHERE to_char(scheduled_for AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD')=$1
+       AND created_at >= $2
        AND NOT (status='failed' AND asset_id IS NULL)`,
-    [dayKey]
+    [dayKey, FRESH_START_AT]
   );
   return Number(result.rows[0]?.total || 0);
 }
