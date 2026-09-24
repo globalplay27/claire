@@ -2,10 +2,12 @@ import { autoPostHours, env, getPublicBaseUrl } from "../config/env.js";
 import { creatorAgent, imageAgent, plannerAgent } from "./openai-agents.js";
 import { publishImagePost } from "./meta-publisher.js";
 import { viralResearchAgent } from "./viral-research.js";
-import { auditOwnInstagramContent } from "./instagram-insights.js";
+import { auditOwnInstagramContent, recommendAdaptivePostHours } from "./instagram-insights.js";
 import { beginPostTracking, clearPostTracking, reportPostStatus, scheduledPostId } from "./nexus-ledger.js";
 import {
+  countJobsForLocalDay,
   createJob,
+  getDailyPostSchedule,
   getPublishableJobs,
   getRecentLearningMemory,
   hasJobForLocalSlot,
@@ -14,6 +16,7 @@ import {
   markPublishing,
   recordRun,
   saveAsset,
+  saveDailyPostSchedule,
   setCreatedContent
 } from "./repository.js";
 
@@ -31,6 +34,39 @@ function saoPauloParts(date = new Date()) {
   }).formatToParts(date);
   const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
   return { dayKey: `${value("year")}-${value("month")}-${value("day")}`, hour: Number(value("hour")) };
+}
+
+async function resolveDailyPostHours(dayKey: string) {
+  const fallback = (autoPostHours.length ? autoPostHours : [9, 14, 20]).slice(0, 3);
+
+  if (!env.ADAPTIVE_POST_TIMES) return fallback.length === 3 ? fallback : [9, 14, 20];
+
+  const stored = await getDailyPostSchedule(dayKey);
+  if (stored?.length === 3) return stored;
+
+  try {
+    const recommendation = await recommendAdaptivePostHours(dayKey);
+    const hours = recommendation.hours.slice(0, 3);
+    await saveDailyPostSchedule(dayKey, hours, recommendation.source, JSON.stringify({
+      sampleSize: recommendation.sampleSize,
+      hourStats: recommendation.hourStats
+    }));
+    await recordRun("planner", "success", JSON.stringify({
+      kind: "adaptive-post-hours",
+      dayKey,
+      hours,
+      source: recommendation.source,
+      sampleSize: recommendation.sampleSize,
+      hourStats: recommendation.hourStats.slice(0, 6)
+    }));
+    console.log(`Adaptive Instagram schedule day=${dayKey} hours=${hours.join(",")} source=${recommendation.source}`);
+    return hours;
+  } catch (error) {
+    const hours = fallback.length === 3 ? fallback : [9, 14, 20];
+    await saveDailyPostSchedule(dayKey, hours, "fallback", String(error instanceof Error ? error.message : error));
+    console.warn("Adaptive schedule fallback", error instanceof Error ? error.message : String(error));
+    return hours;
+  }
 }
 
 async function createFreshPost(label: string) {
@@ -119,9 +155,11 @@ export async function runAutomationCycle() {
     if (!baseUrl) throw new Error("PUBLIC_BASE_URL/RAILWAY_PUBLIC_DOMAIN indisponível");
 
     const { dayKey, hour } = saoPauloParts();
-    const slotHour = autoPostHours.find((scheduledHour) => scheduledHour === hour);
+    const dailyPostHours = await resolveDailyPostHours(dayKey);
+    const slotHour = dailyPostHours.find((scheduledHour) => scheduledHour === hour);
+    const jobsToday = await countJobsForLocalDay(dayKey);
 
-    if (slotHour !== undefined && !(await hasJobForLocalSlot(dayKey, slotHour))) {
+    if (jobsToday < 3 && slotHour !== undefined && !(await hasJobForLocalSlot(dayKey, slotHour))) {
       let jobId: string | null = null;
       const scheduledFor = new Date();
       const scheduledHour = String(slotHour).padStart(2, "0") + ":00";
@@ -221,5 +259,5 @@ export function startAutomation() {
   void runAutomationCycle();
   timer = setInterval(() => void runAutomationCycle(), env.AUTOMATION_POLL_SECONDS * 1000);
   timer.unref();
-  console.log(`Instagram automation enabled; polling every ${env.AUTOMATION_POLL_SECONDS}s; post hours=${autoPostHours.join(",")}`);
+  console.log(`Instagram automation enabled; polling every ${env.AUTOMATION_POLL_SECONDS}s; adaptive_post_times=${env.ADAPTIVE_POST_TIMES}; fallback_hours=${autoPostHours.join(",")}`);
 }
