@@ -5,6 +5,7 @@ import { instagramRouter } from "./instagram/router.js";
 import { automationRouter } from "./automation/router.js";
 import { startAutomation } from "./automation/orchestrator.js";
 import { odinRouter } from "./odin/router.js";
+import { getInstagramInsightSnapshot } from "./automation/instagram-insights.js";
 
 const app = express();
 
@@ -14,6 +15,25 @@ app.use(express.json({
     (req as express.Request).rawBody = Buffer.from(buf);
   }
 }));
+
+app.get("/nexus/instagram/insights", async (req, res) => {
+  const expected = String(env.NEXUS_AGENT_TOKEN || "");
+  const auth = String(req.headers.authorization || "");
+  if (!expected || auth !== "Bearer " + expected) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  try {
+    const snapshot = await getInstagramInsightSnapshot(25);
+    res.json(snapshot);
+  } catch (error) {
+    console.error("NEXUS Instagram insights endpoint failed", error);
+    res.status(502).json({
+      error: "instagram_insights_unavailable",
+      detail: error instanceof Error ? error.message.slice(0, 300) : String(error).slice(0, 300)
+    });
+  }
+});
 
 app.get("/nexus/leads", async (req, res) => {
   const expected = String(env.NEXUS_AGENT_TOKEN || "");
