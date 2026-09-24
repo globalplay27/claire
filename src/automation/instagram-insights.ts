@@ -143,6 +143,109 @@ export async function getInstagramInsightSnapshot(limit = 25): Promise<Instagram
   };
 }
 
+
+function timingMedian(values: number[]) {
+  const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
+  if (!clean.length) return 0;
+  const middle = Math.floor(clean.length / 2);
+  return clean.length % 2 ? clean[middle]! : (clean[middle - 1]! + clean[middle]!) / 2;
+}
+
+function saoPauloHourFromTimestamp(timestamp: string | null) {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  if (!Number.isFinite(date.getTime())) return null;
+  const text = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    hourCycle: "h23"
+  }).format(date);
+  const hour = Number(text);
+  return Number.isInteger(hour) ? hour : null;
+}
+
+export async function recommendAdaptivePostHours(dayKey: string) {
+  const snapshot = await getInstagramInsightSnapshot(25);
+  const valuesByHour = new Map<number, number[]>();
+  const countByHour = new Map<number, number>();
+
+  for (const item of snapshot.items) {
+    const hour = saoPauloHourFromTimestamp(item.timestamp);
+    if (hour === null || hour < 6 || hour > 23) continue;
+
+    const timestamp = item.timestamp ? new Date(item.timestamp).getTime() : NaN;
+    const ageHours = Number.isFinite(timestamp) ? Math.max(0, (Date.now() - timestamp) / 3600000) : 0;
+    if (ageHours < 3) continue;
+
+    const comparisonHours = Math.max(3, Math.min(ageHours, 72));
+    const distribution = Number(item.reach || item.views || 0) / comparisonHours;
+    const actionSignal =
+      Number(item.shares || 0) * 1.6 +
+      Number(item.saved || 0) * 1.2 +
+      Number(item.commentsCount || 0) * 0.35 +
+      Number(item.likeCount || 0) * 0.08;
+    const score = distribution + actionSignal;
+
+    const current = valuesByHour.get(hour) || [];
+    current.push(score);
+    valuesByHour.set(hour, current);
+    countByHour.set(hour, (countByHour.get(hour) || 0) + 1);
+  }
+
+  const stats = [...valuesByHour.entries()]
+    .map(([hour, values]) => ({
+      hour,
+      score: timingMedian(values),
+      posts: countByHour.get(hour) || values.length
+    }))
+    .sort((a, b) => b.score - a.score || b.posts - a.posts || a.hour - b.hour);
+
+  const selected: number[] = [];
+  const canUse = (hour: number) => selected.every((current) => Math.abs(current - hour) >= 4);
+
+  const exploitLimit = stats.length >= 6 ? 3 : 2;
+  for (const stat of stats) {
+    if (selected.length >= exploitLimit) break;
+    if (canUse(stat.hour)) selected.push(stat.hour);
+  }
+
+  // Enquanto há poucos horários testados, reserva um slot para exploração controlada.
+  // Isso evita ficar preso para sempre nos antigos 09/12/18 sem aprender horários melhores.
+  if (selected.length < 3) {
+    const tested = new Set(stats.map((item) => item.hour));
+    const seed = [...dayKey].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const candidates = Array.from({ length: 16 }, (_, index) => index + 7)
+      .filter((hour) => canUse(hour))
+      .map((hour) => {
+        const modeled = stats.length
+          ? Math.max(...stats.map((item) => item.score * Math.pow(0.82, Math.abs(item.hour - hour))))
+          : 0;
+        const novelty = tested.has(hour) ? 0 : Math.max(0.05, (stats[0]?.score || 1) * 0.08);
+        const tieBreaker = ((seed + hour * 17) % 13) / 10000;
+        return { hour, score: modeled + novelty + tieBreaker };
+      })
+      .sort((a, b) => b.score - a.score || a.hour - b.hour);
+
+    for (const candidate of candidates) {
+      if (selected.length >= 3) break;
+      if (canUse(candidate.hour)) selected.push(candidate.hour);
+    }
+  }
+
+  for (const hour of [9, 14, 20, 8, 13, 18, 22]) {
+    if (selected.length >= 3) break;
+    if (canUse(hour)) selected.push(hour);
+  }
+
+  const hours = selected.sort((a, b) => a - b).slice(0, 3);
+  return {
+    hours: hours.length === 3 ? hours : [9, 14, 20],
+    source: stats.length ? (stats.length >= 6 ? "historical-performance" : "performance-plus-exploration") : "fallback",
+    sampleSize: snapshot.items.length,
+    hourStats: stats.slice(0, 10)
+  };
+}
+
 export async function auditOwnInstagramContent(): Promise<AccountAudit> {
   try {
     const json = await graphGet(
