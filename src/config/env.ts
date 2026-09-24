@@ -26,6 +26,7 @@ const envSchema = z.object({
   AUTOMATION_POLL_SECONDS: z.coerce.number().int().min(30).default(60),
   AUTOMATION_ADMIN_TOKEN: z.string().min(8).optional(),
   AUTO_POST_HOURS: z.string().default("9,12,18"),
+  ADAPTIVE_POST_TIMES: z.string().default("true").transform((v) => v === "true"),
   PUBLIC_BASE_URL: z.string().url().optional(),
   BRAND_NAME: z.string().default("Global Play"),
   BRAND_INSTAGRAM: z.string().default("@globalplay_streaming"),
