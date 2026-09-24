@@ -37,6 +37,110 @@ async function fetchInsightMetric(mediaId: string, metric: string): Promise<numb
   }
 }
 
+export type InstagramInsightSnapshot = {
+  ok: boolean;
+  source: string;
+  username: string;
+  followersCount: number;
+  mediaCount: number;
+  items: Array<{
+    id: string;
+    caption: string;
+    timestamp: string | null;
+    mediaType: string;
+    likeCount: number;
+    commentsCount: number;
+    permalink: string;
+    reach: number | null;
+    views: number | null;
+    saved: number | null;
+    shares: number | null;
+    totalInteractions: number | null;
+    insightMetrics: string[];
+    insightError: string;
+  }>;
+  insightErrors: Array<{ id: string; error: string }>;
+  profileError: string;
+};
+
+async function fetchInsightMetrics(mediaId: string) {
+  const metrics = ["reach", "views", "saved", "shares", "total_interactions"];
+  const result: Record<string, number | null> = {};
+  const errors: string[] = [];
+
+  await Promise.all(metrics.map(async (metric) => {
+    try {
+      result[metric] = await fetchInsightMetric(mediaId, metric);
+    } catch (error) {
+      result[metric] = null;
+      errors.push(error instanceof Error ? error.message : String(error));
+    }
+  }));
+
+  return {
+    reach: result.reach ?? null,
+    views: result.views ?? null,
+    saved: result.saved ?? null,
+    shares: result.shares ?? null,
+    totalInteractions: result.total_interactions ?? null,
+    insightMetrics: metrics.filter((metric) => result[metric] !== null),
+    insightError: errors.join("; ").slice(0, 240)
+  };
+}
+
+export async function getInstagramInsightSnapshot(limit = 25): Promise<InstagramInsightSnapshot> {
+  const safeLimit = Math.max(1, Math.min(25, Number(limit) || 25));
+  let profileError = "";
+  let username = "";
+  let followersCount = 0;
+  let mediaCount = 0;
+
+  try {
+    const profile = await graphGet(
+      `${env.INSTAGRAM_ACCOUNT_ID}?fields=username,followers_count,media_count`
+    );
+    username = String(profile?.username || "");
+    followersCount = Math.max(0, Number(profile?.followers_count || 0));
+    mediaCount = Math.max(0, Number(profile?.media_count || 0));
+  } catch (error) {
+    profileError = error instanceof Error ? error.message : String(error);
+  }
+
+  const json = await graphGet(
+    `${env.INSTAGRAM_ACCOUNT_ID}/media?fields=id,caption,media_type,timestamp,like_count,comments_count,permalink&limit=${safeLimit}`
+  );
+  const media: MediaItem[] = Array.isArray(json?.data) ? json.data : [];
+  const items = await Promise.all(media.map(async (item) => {
+    const insight = await fetchInsightMetrics(item.id);
+    return {
+      id: String(item.id || ""),
+      caption: String(item.caption || "").slice(0, 2200),
+      timestamp: item.timestamp || null,
+      mediaType: String(item.media_type || ""),
+      likeCount: Math.max(0, Number(item.like_count || 0)),
+      commentsCount: Math.max(0, Number(item.comments_count || 0)),
+      permalink: String(item.permalink || ""),
+      ...insight
+    };
+  }));
+
+  const insightErrors = items
+    .filter((item) => item.insightError)
+    .map((item) => ({ id: item.id, error: item.insightError }))
+    .slice(0, 10);
+
+  return {
+    ok: true,
+    source: "claire-instagram-api",
+    username,
+    followersCount,
+    mediaCount,
+    items,
+    insightErrors,
+    profileError: profileError.slice(0, 240)
+  };
+}
+
 export async function auditOwnInstagramContent(): Promise<AccountAudit> {
   try {
     const json = await graphGet(
