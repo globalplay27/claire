@@ -157,3 +157,65 @@ export async function listRecentJobs(limit = 20) {
   );
   return result.rows.map(rowToJob);
 }
+
+
+let dailyScheduleTableReady = false;
+
+async function ensureDailyScheduleTable() {
+  if (dailyScheduleTableReady) return;
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS automation_daily_schedules(
+      day_key TEXT PRIMARY KEY,
+      hours_json TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'adaptive',
+      detail TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  dailyScheduleTableReady = true;
+}
+
+export async function getDailyPostSchedule(dayKey: string): Promise<number[] | null> {
+  await ensureDailyScheduleTable();
+  const result = await db.query<{ hours_json: string }>(
+    `SELECT hours_json FROM automation_daily_schedules WHERE day_key=$1 LIMIT 1`,
+    [dayKey]
+  );
+  const raw = result.rows[0]?.hours_json;
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    const hours = Array.isArray(parsed)
+      ? parsed.map(Number).filter((hour) => Number.isInteger(hour) && hour >= 0 && hour <= 23)
+      : [];
+    return [...new Set(hours)].sort((a, b) => a - b).slice(0, 3);
+  } catch {
+    return null;
+  }
+}
+
+export async function saveDailyPostSchedule(dayKey: string, hours: number[], source = "adaptive", detail = "") {
+  await ensureDailyScheduleTable();
+  const clean = [...new Set(hours.map(Number).filter((hour) => Number.isInteger(hour) && hour >= 0 && hour <= 23))]
+    .sort((a, b) => a - b)
+    .slice(0, 3);
+  await db.query(
+    `INSERT INTO automation_daily_schedules(day_key,hours_json,source,detail)
+     VALUES($1,$2,$3,$4)
+     ON CONFLICT(day_key) DO UPDATE
+       SET hours_json=EXCLUDED.hours_json, source=EXCLUDED.source, detail=EXCLUDED.detail, updated_at=NOW()`,
+    [dayKey, JSON.stringify(clean), source, detail.slice(0, 3000)]
+  );
+  return clean;
+}
+
+export async function countJobsForLocalDay(dayKey: string) {
+  const result = await db.query<{ total: string }>(
+    `SELECT COUNT(*)::text AS total FROM automation_jobs
+     WHERE to_char(scheduled_for AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD')=$1
+       AND NOT (status='failed' AND asset_id IS NULL)`,
+    [dayKey]
+  );
+  return Number(result.rows[0]?.total || 0);
+}
