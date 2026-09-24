@@ -157,7 +157,8 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
       const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
       if (!clean.length) return 0;
       const middle = Math.floor(clean.length / 2);
-      return clean.length % 2 ? clean[middle] : (clean[middle - 1] + clean[middle]) / 2;
+      const center = clean[middle]!;
+      return clean.length % 2 ? center : (clean[middle - 1]! + center) / 2;
     };
 
     const scored: Array<{
@@ -206,8 +207,10 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
     const formatStats = [...formatMap.entries()]
       .map(([format, values]) => ({ format, medianVelocity: median(values), posts: values.length }))
       .sort((a, b) => b.medianVelocity - a.medianVelocity);
-    const formatSignal = formatStats.length >= 2 && formatStats[0].medianVelocity > formatStats[1].medianVelocity * 1.3
-      ? `${formatStats[0].format} está distribuindo mais rápido que ${formatStats[1].format} após ajuste pela idade dos posts. Use o mecanismo do formato vencedor e evite repetição visual.`
+    const bestFormat = formatStats[0];
+    const secondFormat = formatStats[1];
+    const formatSignal = bestFormat && secondFormat && bestFormat.medianVelocity > secondFormat.medianVelocity * 1.3
+      ? `${bestFormat.format} está distribuindo mais rápido que ${secondFormat.format} após ajuste pela idade dos posts. Use o mecanismo do formato vencedor e evite repetição visual.`
       : "Não há diferença forte e confiável entre formatos nesta amostra.";
 
     const ordered = scored
