@@ -55,3 +55,4 @@ globalThis.fetch = async (input, init) => {
 console.log(
   `[fresh-start] cutoff=2026-09-24T08:00:00-03:00 test_day=${saoPauloDay() === TEST_DAY ? "09,12,16" : "adaptive"}`
 );
+// Runtime activation commit: use the Railway custom start command on the next source deploy.
