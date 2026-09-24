@@ -115,6 +115,32 @@ app.use(express.json({
   }
 }));
 
+app.get("/nexus/status", async (req, res) => {
+  if (!nexusAuthorized(req)) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  try {
+    await db.query("SELECT 1");
+    res.json({
+      ok: true,
+      connected: true,
+      agent: "Claire",
+      clientId: "globalplay-streaming",
+      automationEnabled: env.AUTOMATION_ENABLED,
+      openaiConfigured: Boolean(env.OPENAI_API_KEY),
+      service: "claire-instagram-agent"
+    });
+  } catch {
+    res.status(503).json({
+      ok: false,
+      connected: false,
+      agent: "Claire",
+      error: "database_unavailable"
+    });
+  }
+});
+
 app.get("/nexus/instagram/insights", async (req, res) => {
   const expected = String(env.NEXUS_AGENT_TOKEN || "");
   const auth = String(req.headers.authorization || "");
