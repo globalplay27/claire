@@ -97,7 +97,7 @@ async function createFreshPost(label: string) {
       weak: audit.weakPatterns.slice(0, 2)
     }));
 
-    const plan = await plannerAgent(research, audit);
+    const plan = await plannerAgent(research, audit, "growth");
     const job = await createJob({
       agent: "planner",
       topic: plan.topic,
@@ -106,7 +106,7 @@ async function createFreshPost(label: string) {
     });
     jobId = job.id;
 
-    const content = await creatorAgent(job.topic, job.objective, research, audit);
+    const content = await creatorAgent(job.topic, job.objective, research, audit, "growth");
     await setCreatedContent(job.id, content.caption, content.imagePrompt);
 
     const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
@@ -183,7 +183,9 @@ export async function runAutomationCycle() {
           weak: audit.weakPatterns.slice(0, 2)
         }));
 
-        const plan = await plannerAgent(research, audit);
+        const slotIndex = dailyPostHours.indexOf(slotHour);
+        const contentMode = slotIndex === dailyPostHours.length - 1 ? "conversion" : "growth";
+        const plan = await plannerAgent(research, audit, contentMode);
         const job = await createJob({
           agent: "planner",
           topic: plan.topic,
@@ -192,13 +194,13 @@ export async function runAutomationCycle() {
         });
         jobId = job.id;
 
-        const content = await creatorAgent(job.topic, job.objective, research, audit);
+        const content = await creatorAgent(job.topic, job.objective, research, audit, contentMode);
         await setCreatedContent(job.id, content.caption, content.imagePrompt);
 
         const image = await imageAgent(content.imagePrompt, content.headline, content.subheadline);
         const assetId = await saveAsset(job.id, image);
         reportPostStatus("ready", { approvalStatus: "approved" });
-        await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; slot=${slotHour}`);
+        await recordRun("creator", "success", `job=${job.id}; asset=${assetId}; slot=${slotHour}; mode=${contentMode}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (jobId) await markFailed(jobId, message).catch(() => undefined);
