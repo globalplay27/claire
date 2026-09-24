@@ -54,6 +54,8 @@ Varie os conceitos e não repita a mesma composição visual em publicações co
 Não prometa viralização, zero travamentos nem invente resultados.
 ${GLOBAL_PLAY_CREATIVE_DNA}
 ${campaignBrief}
+KPI principal: aumentar seguidores qualificados no Instagram. Priorize ideias que gerem compartilhamentos, salvamentos, visitas ao perfil, curiosidade recorrente e motivo claro para seguir. Venda direta, preço e conversão são secundários nesta fase.
+Evite transformar todo post em anúncio. Prefira séries, descoberta, opinião, utilidade, entretenimento e ganchos que façam a pessoa querer acompanhar o próximo conteúdo.
 Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","format":"image"}.`,
     input: `PESQUISA VIRAL:\n${JSON.stringify(research)}\n\nAUDITORIA:\n${JSON.stringify(audit)}\n\nEscolha a próxima publicação.`
   } as any);
@@ -62,14 +64,14 @@ Responda JSON puro: {"topic":"...","objective":"...","pain":"...","hook":"...","
   if (isResellerCampaignDay()) {
     return {
       topic: String(parsed.topic || "Oportunidade profissional para revendedores"),
-      objective: String(parsed.objective || "Atrair revendedores com uma comunicação positiva, clara e comercial"),
+      objective: String(parsed.objective || "Atrair seguidores qualificados com conteúdo útil, compartilhável e recorrente"),
       pain: String(parsed.pain || "dificuldade de encontrar estrutura e suporte confiáveis"),
       hook: String(parsed.hook || "Pronto para levar sua revenda a outro nível?")
     };
   }
   return {
     topic: String(parsed.topic || "Entretenimento que combina com o momento do cliente"),
-    objective: String(parsed.objective || "Gerar desejo, interação e visitas ao site com uma ideia de alto impacto visual"),
+    objective: String(parsed.objective || "Gerar compartilhamentos, salvamentos, visitas ao perfil e novos seguidores com uma ideia de alto impacto visual"),
     pain: String(parsed.pain || "experiência de entretenimento pouco prática ou limitada"),
     hook: String(parsed.hook || "O que vai entrar na sua tela hoje?")
   };
@@ -82,7 +84,7 @@ export async function creatorAgent(topic: string, objective: string, research: V
     model: env.OPENAI_MODEL,
     instructions: `Você é o diretor criativo da Global Play (${env.BRAND_INSTAGRAM}).
 Crie legenda curta + headline + apoio + descrição de FUNDO VISUAL SEM TEXTO.
-Legenda: até 3 frases curtas, 5 a 8 hashtags, sem linguagem corporativa. A aplicação acrescentará obrigatoriamente o CTA para comentar QUERO; não peça palavra no Direct e não substitua esse CTA por outro.
+Legenda: até 3 frases curtas, no máximo 5 hashtags, sem linguagem corporativa. O objetivo principal é crescimento de seguidores: crie curiosidade, utilidade, identificação ou entretenimento que dê motivo para seguir, salvar e compartilhar. A aplicação acrescentará CTA de seguir/compartilhar; não use preço nem peça "QUERO" como foco principal.
 Arte: cinematográfica, realista, forte, brasileira e feita para parar o scroll em 2 segundos.
 Priorize diversão, descoberta, emoção positiva, futebol, noite de cinema, maratona, família/amigos, movimento e desejo de assistir.
 PROIBIDO: homem sofrendo, pessoa triste/desesperada, rosto de raiva, casal brigando, split-screen "antes sofrendo / depois feliz" ou qualquer dramatização literal da dor.
