@@ -18,6 +18,14 @@ function parseJson(text: string): any {
   return JSON.parse(raw);
 }
 
+type ContentMode = "growth" | "conversion";
+
+function modeBrief(mode: ContentMode) {
+  return mode === "conversion"
+    ? "CONVERSÃO: este é o único post comercial do ciclo. Pode trabalhar oferta e intenção de compra com clareza, sem promessas exageradas."
+    : "CRESCIMENTO: não use preços, tabela, oferta direta nem peça QUERO. Entregue entretenimento, curiosidade, utilidade ou identificação com motivo claro para seguir, salvar ou compartilhar.";
+}
+
 function cleanHashtags(value: unknown, topic: string) {
   const fromModel = Array.isArray(value) ? value.map(String).filter((tag) => /^#[A-Za-zÀ-ÿ0-9_]+$/.test(tag) && !/semtrav|zerotrav/i.test(tag)).slice(0, 8) : [];
   const topicTags: string[] = [];
