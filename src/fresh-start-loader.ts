@@ -55,3 +55,4 @@ globalThis.fetch = (async (input: any, init?: any) => {
 console.log(
   `[fresh-start] cutoff=2026-09-24T08:00:00-03:00 test_day=${saoPauloDay() === TEST_DAY ? "09,12,16" : "adaptive"}`
 );
+// Compiled loader is intentionally imported from dist by Railway's start command.
