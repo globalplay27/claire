@@ -47,6 +47,7 @@ export async function plannerAgent(research: ViralResearch, audit: AccountAudit)
     model: env.OPENAI_MODEL,
     instructions: `Você é o estrategista do Instagram da ${env.BRAND_NAME}.
 Use pesquisa viral atual + dados da própria conta para escolher UMA ideia com maior potencial de atenção e intenção comercial.
+A auditoria pode conter posts manuais fora do nicho (por exemplo automação, IA ou NEXUS). Se um post fora do nicho tiver bom desempenho, extraia SOMENTE o mecanismo de atenção, o formato, o ritmo e a estrutura do gancho; NUNCA leve o assunto fora do nicho para a próxima publicação. O tema final deve continuar sendo streaming, entretenimento, filmes, séries ou futebol conforme a campanha.
 Priorize curiosidade, entretenimento, desejo, identificação positiva, compartilhamento e clareza. Não copie; extraia mecanismo, formato e tensão.
 Dor pode ser usada como contexto de copy, mas NUNCA transforme a criação em homem sofrendo, pessoa desesperada, rosto de raiva ou comparação triste x feliz.
 Varie os conceitos e não repita a mesma composição visual em publicações consecutivas.
