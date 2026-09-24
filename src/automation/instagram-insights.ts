@@ -16,6 +16,8 @@ export type AccountAudit = {
   topPatterns: string[];
   weakPatterns: string[];
   summary: string;
+  formatSignal?: string;
+  trendSignal?: string;
 };
 
 async function graphGet(path: string) {
@@ -151,8 +153,23 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
       return { available: false, sampleSize: 0, topPatterns: [], weakPatterns: [], summary: "Ainda não há amostra suficiente da própria conta." };
     }
 
-    const scored: Array<{ item: MediaItem; reach: number | null; saved: number | null; shares: number | null; score: number }> = [];
-    for (const item of media.slice(0, 12)) {
+    const median = (values: number[]) => {
+      const clean = values.filter(Number.isFinite).sort((a, b) => a - b);
+      if (!clean.length) return 0;
+      const middle = Math.floor(clean.length / 2);
+      return clean.length % 2 ? clean[middle] : (clean[middle - 1] + clean[middle]) / 2;
+    };
+
+    const scored: Array<{
+      item: MediaItem;
+      reach: number | null;
+      saved: number | null;
+      shares: number | null;
+      score: number;
+      reachVelocity: number | null;
+    }> = [];
+
+    for (const item of media.slice(0, 16)) {
       const [reach, saved, shares] = await Promise.all([
         fetchInsightMetric(item.id, "reach"),
         fetchInsightMetric(item.id, "saved"),
@@ -160,19 +177,53 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
       ]);
       const likes = Number(item.like_count || 0);
       const comments = Number(item.comments_count || 0);
-      const score = reach && reach > 0
-        ? (likes + comments * 2 + (saved || 0) * 3 + (shares || 0) * 4) / reach
-        : likes + comments * 2 + (saved || 0) * 3 + (shares || 0) * 4;
-      scored.push({ item, reach, saved, shares, score });
+      const weighted = likes + comments * 2 + (saved || 0) * 3 + (shares || 0) * 4;
+      const score = reach && reach > 0 ? weighted / reach : weighted;
+      const timestamp = item.timestamp ? new Date(item.timestamp).getTime() : NaN;
+      const ageHours = Number.isFinite(timestamp) ? Math.max(0, (Date.now() - timestamp) / 3600000) : 0;
+      const reachVelocity = reach && reach > 0 && ageHours >= 3
+        ? reach / Math.max(3, Math.min(ageHours, 72))
+        : null;
+      scored.push({ item, reach, saved, shares, score, reachVelocity });
     }
 
-    scored.sort((a, b) => b.score - a.score);
-    const top = scored.slice(0, Math.min(4, scored.length));
-    const bottom = scored.slice(-Math.min(3, scored.length));
+    const medianReach = median(scored.map((x) => Number(x.reach || 0)).filter((x) => x > 0));
+    const reliableReachFloor = Math.max(20, medianReach * 0.75);
+    const reliable = scored.filter((x) => Number(x.reach || 0) >= reliableReachFloor);
+
+    const ranked = [...(reliable.length ? reliable : scored)].sort((a, b) => b.score - a.score);
+    const top = ranked.slice(0, Math.min(4, ranked.length));
+    const bottom = [...(reliable.length ? reliable : scored)].sort((a, b) => a.score - b.score).slice(0, Math.min(3, ranked.length));
+
+    const formatMap = new Map<string, number[]>();
+    for (const row of scored) {
+      if (row.reachVelocity === null) continue;
+      const key = String(row.item.media_type || "POST").toUpperCase();
+      const current = formatMap.get(key) || [];
+      current.push(row.reachVelocity);
+      formatMap.set(key, current);
+    }
+    const formatStats = [...formatMap.entries()]
+      .map(([format, values]) => ({ format, medianVelocity: median(values), posts: values.length }))
+      .sort((a, b) => b.medianVelocity - a.medianVelocity);
+    const formatSignal = formatStats.length >= 2 && formatStats[0].medianVelocity > formatStats[1].medianVelocity * 1.3
+      ? `${formatStats[0].format} está distribuindo mais rápido que ${formatStats[1].format} após ajuste pela idade dos posts. Use o mecanismo do formato vencedor e evite repetição visual.`
+      : "Não há diferença forte e confiável entre formatos nesta amostra.";
+
+    const ordered = scored
+      .filter((x) => x.reachVelocity !== null && x.item.timestamp)
+      .sort((a, b) => String(b.item.timestamp).localeCompare(String(a.item.timestamp)));
+    const half = Math.min(6, Math.floor(ordered.length / 2));
+    const recentVelocity = half >= 3 ? median(ordered.slice(0, half).map((x) => Number(x.reachVelocity))) : 0;
+    const priorVelocity = half >= 3 ? median(ordered.slice(half, half * 2).map((x) => Number(x.reachVelocity))) : 0;
+    const ratio = priorVelocity > 0 ? recentVelocity / priorVelocity : null;
+    const trendSignal = ratio !== null && ratio < 0.7
+      ? "A velocidade de alcance recente caiu mesmo após ajuste pela idade dos posts; variar gancho, tema e composição visual é prioridade."
+      : "A velocidade de alcance recente não mostra queda forte após ajuste pela idade dos posts.";
 
     const compact = (x: typeof scored[number]) => {
       const caption = (x.item.caption || "(sem legenda)").replace(/\s+/g, " ").slice(0, 140);
-      return `${x.item.media_type || "POST"}: ${caption} | likes=${x.item.like_count || 0} comments=${x.item.comments_count || 0}${x.reach !== null ? ` reach=${x.reach}` : ""}${x.saved !== null ? ` saved=${x.saved}` : ""}${x.shares !== null ? ` shares=${x.shares}` : ""}`;
+      return `${x.item.media_type || "POST"}: ${caption} | likes=${x.item.like_count || 0} comments=${x.item.comments_count || 0}${x.reach !== null ? ` reach=${x.reach}` : ""}${x.saved !== null ? ` saved=${x.saved}` : ""}${x.shares !== null ? ` shares=${x.shares}` : ""}${x.reachVelocity !== null ? ` reach/h=${x.reachVelocity.toFixed(2)}` : ""}`;
     };
 
     return {
@@ -180,7 +231,9 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
       sampleSize: scored.length,
       topPatterns: top.map(compact),
       weakPatterns: bottom.map(compact),
-      summary: `Amostra própria: ${scored.length} posts. Use os padrões dos melhores como sinal, não como certeza; evite repetir os piores sem novo teste.`
+      formatSignal,
+      trendSignal,
+      summary: `Amostra própria: ${scored.length} posts. ${formatSignal} ${trendSignal} Ignore taxas chamativas em posts com alcance minúsculo; use padrões com amostra suficiente.`
     };
   } catch (error) {
     return {
@@ -192,3 +245,4 @@ export async function auditOwnInstagramContent(): Promise<AccountAudit> {
     };
   }
 }
+
