@@ -81,6 +81,9 @@ LEGENDA
 - Primeira linha forte.
 - No máximo 3 frases curtas antes das hashtags.
 - Uma única ideia por post.
+- Se a legenda fizer pergunta de escolha, repetir as opções por nome; não usar números soltos.
+- Evitar repetir a mesma chamada ou CTA em dois parágrafos.
+- Para enquete, preferir "Comente FILME, SÉRIE ou FUTEBOL" a "Comente 1, 2 ou 3".
 - Evitar linguagem corporativa como "avalie seu objetivo", "perfil de utilização", "condições disponíveis".
 - CTA principal em TODA legenda automática: seguir @globalplay_streaming.
 - Alternar CTA secundário entre salvar e compartilhar, sem pedir várias ações ao mesmo tempo.
@@ -89,6 +92,7 @@ LEGENDA
 
 REGRA DE QUALIDADE
 - A arte precisa ser entendida em até 2 segundos no celular.
+- Reprovar automaticamente enquete ambígua, opção ausente, número sem legenda correspondente, TV/tela vazia como foco sem conteúdo contextual ou CTA que dependa de adivinhação.
 - Precisa parecer anúncio profissional da Global Play, não rascunho de IA.
 - Se houver inglês, texto aleatório, tipografia quebrada, visual genérico ou baixa legibilidade: reprovar e gerar novamente.
 `;
